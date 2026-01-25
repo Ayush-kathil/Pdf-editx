@@ -1,8 +1,12 @@
 # Secure PDF & Image Suite
 
-A premium, privacy-focused web application for managing PDF and Image files
-securely in your browser. All processing happens locally on your device—no files
-are ever uploaded to a server.
+A privacy-first document utility suite engineered with **Next.js 14**,
+**TypeScript**, and **WebAssembly**.
+
+This application processes sensitive files (PDFs, Images) entirely within the
+browser client. By leveraging the HTML5 Canvas API and `pdf-lib`, it eliminates
+the need for server-side processing, ensuring **Zero Knowledge** architecture
+where user data never leaves the device.
 
 ## 🛡️ Features
 

@@ -54,9 +54,9 @@ export default function LandingPage() {
                 PDF Editx
               </span>
             </h1>
-            <p className="text-xl text-txt-secondary max-w-xl mx-auto leading-relaxed">
-              Classical tools for your critical documents<br/>
-              <span className="text-txt-primary">Processed securely in your browser</span>
+            <p className="text-xl text-txt-secondary max-w-xl mx-auto leading-relaxed font-normal">
+              Essential utilities for your documents<br/>
+              <span className="text-txt-primary font-medium">Client-side only. Zero data collected.</span>
             </p>
              <div className="pt-2">
                 <a 
@@ -160,21 +160,26 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Footer / Credits */}
-          <motion.footer variants={fadeInUp} className="mt-20 text-center space-y-6">
-             <div className="flex flex-col items-center space-y-2">
-                <p className="text-txt-tertiary text-sm font-medium">Designed & Developed by</p>
-                <h3 className="text-xl font-bold text-txt-primary">Ayush Gupta</h3>
-             </div>
+          <motion.footer variants={fadeInUp} className="mt-20 flex flex-col items-center space-y-8 pb-10">
              
-             <div className="flex items-center justify-center gap-6">
-                <a href="https://github.com/Ayush-kathil" target="_blank" rel="noopener noreferrer" className="p-3 bg-element rounded-full text-txt-secondary hover:text-white hover:bg-txt-primary border border-border-main hover:border-txt-primary transition-all hover:scale-110">
+             {/* Developer About Button */}
+             <a 
+                href="https://ayushgupta3.vercel.app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group flex items-center space-x-2 px-5 py-2.5 rounded-full bg-element hover:bg-txt-primary border border-border-main transition-all duration-300 shadow-sm hover:shadow-md"
+             >
+                <span className="text-sm font-medium text-txt-secondary group-hover:text-bg-page">Developer</span>
+                <div className="w-1 h-1 rounded-full bg-txt-tertiary group-hover:bg-bg-page/50" />
+                <span className="text-sm font-bold text-txt-primary group-hover:text-bg-page">Ayush Gupta</span>
+             </a>
+
+             <div className="flex items-center justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
+                <a href="https://github.com/Ayush-kathil" target="_blank" rel="noopener noreferrer" className="text-txt-tertiary hover:text-txt-primary transition-colors">
                     <Github className="w-5 h-5" />
                 </a>
-                <a href="https://www.linkedin.com/in/ayushkathil" target="_blank" rel="noopener noreferrer" className="p-3 bg-element rounded-full text-txt-secondary hover:text-white hover:bg-[#0077b5] border border-border-main hover:border-[#0077b5] transition-all hover:scale-110">
+                <a href="https://www.linkedin.com/in/ayushkathil" target="_blank" rel="noopener noreferrer" className="text-txt-tertiary hover:text-[#0077b5] transition-colors">
                     <Linkedin className="w-5 h-5" />
-                </a>
-                 <a href="https://ayushgupta3.vercel.app" target="_blank" rel="noopener noreferrer" className="p-3 bg-element rounded-full text-txt-secondary hover:text-white hover:bg-emerald-600 border border-border-main hover:border-emerald-600 transition-all hover:scale-110">
-                    <Globe className="w-5 h-5" />
                 </a>
              </div>
           </motion.footer>

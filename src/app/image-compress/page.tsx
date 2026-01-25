@@ -33,6 +33,8 @@ export default function ImageCompressPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const handleFileSelect = (selectedFile: File) => {
     // Basic validation for image type
     if (!selectedFile.type.startsWith('image/')) {
@@ -40,6 +42,7 @@ export default function ImageCompressPage() {
         return;
     }
     setFile(selectedFile);
+    setPreviewUrl(URL.createObjectURL(selectedFile));
     setStep('SETTINGS');
     setError(null);
   };
@@ -80,8 +83,10 @@ export default function ImageCompressPage() {
   };
 
   const handleReset = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setFile(null);
     setCompressedBlob(null);
+    setPreviewUrl(null);
     setStep('UPLOAD');
     setError(null);
   };
@@ -166,6 +171,19 @@ export default function ImageCompressPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent pointer-events-none" />
 
                     <h2 className="text-2xl font-bold mb-6 text-txt-primary">Compression Settings</h2>
+                    
+                    {/* Image Preview */}
+                    {previewUrl && (
+                        <div className="mb-8 w-full flex justify-center">
+                            <div className="relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg border border-border-main bg-element/50">
+                                <img 
+                                    src={previewUrl} 
+                                    alt="Preview" 
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        </div>
+                    )}
                     
                     {/* Mode Toggle */}
                     <div className="flex bg-element p-1 rounded-xl mb-8">
