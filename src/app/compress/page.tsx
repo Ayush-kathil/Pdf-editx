@@ -128,7 +128,7 @@ export default function CompressPage() {
                             className={clsx(
                                 "px-4 py-2 rounded-full text-xs font-bold transition-all border",
                                 quality === q 
-                                    ? "bg-txt-primary text-bg-page border-txt-primary" 
+                                    ? "bg-txt-primary text-page border-txt-primary" 
                                     : "bg-element text-txt-secondary border-border-main hover:border-txt-primary"
                             )}
                         >

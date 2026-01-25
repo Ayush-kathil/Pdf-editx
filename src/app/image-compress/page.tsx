@@ -140,7 +140,12 @@ export default function ImageCompressPage() {
                   exit={{ opacity: 0, scale: 0.9, y: -20, filter: 'blur(10px)' }}
                   transition={springTransition}
                 >
-                  <FileUpload onFileSelect={handleFileSelect} />
+                  <FileUpload 
+                    onFileSelect={handleFileSelect} 
+                    accept={{ 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'], 'image/webp': ['.webp'] }}
+                    label="Upload Image"
+                    subLabel="JPG, PNG, WebP up to 10MB."
+                  />
                   {error && (
                     <div className="mt-6 text-red-500 text-sm bg-red-500/10 p-4 rounded-xl text-center border border-red-500/20">
                         {error}
@@ -225,7 +230,7 @@ export default function ImageCompressPage() {
                     <button 
                          onClick={handleCompress}
                          disabled={isProcessing}
-                         className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-bg-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
+                         className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
                     >
                          {isProcessing ? "Compressing..." : "Compress Image"}
                     </button>
@@ -260,7 +265,7 @@ export default function ImageCompressPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDownload}
-                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-bg-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
+                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
                     >
                       <Download className="w-6 h-6" />
                       <span>Download Image</span>

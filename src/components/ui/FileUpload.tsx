@@ -8,27 +8,45 @@ import clsx from 'clsx';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
+  accept?: Record<string, string[]>;
+  label?: string;
+  subLabel?: string;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({ 
+    onFileSelect, 
+    accept = { 'application/pdf': ['.pdf'] },
+    label = "Upload your PDF",
+    subLabel = "Files up to 10MB. Processed entirely on your device."
+}) => {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      if (file.type !== 'application/pdf') {
-        setError('Please upload a valid PDF file.');
-        return;
-      }
+      // Basic type validation based on accept keys
+      const acceptedTypes = Object.keys(accept);
+      const isValidType = acceptedTypes.some(type => {
+         if (type.endsWith('/*')) {
+             const baseType = type.split('/')[0];
+             return file.type.startsWith(baseType + '/');
+         }
+         return file.type === type || acceptedTypes.includes(file.type); // Simple check
+      });
+      
+      // Let dropzone handle most validation, but we can do a sanity check if needed.
+      // Actually React-Dropzone handles rejection, so if we are here, it matches 'accept' usually.
+      
       onFileSelect(file);
     }
-  }, [onFileSelect]);
+  }, [onFileSelect, accept]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
+    accept,
     multiple: false,
+    onDropRejected: () => setError("Invalid file type. Please upload a supported file.")
   });
 
   return (
@@ -43,7 +61,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
         className={clsx(
           "relative group cursor-pointer rounded-[2rem] border transition-all duration-500 p-12 flex flex-col items-center justify-center text-center overflow-hidden backdrop-blur-2xl",
           isDragActive 
-            ? "border-txt-primary bg-element/80 shadow-[0_0_50px_-10px_var(--accent-glow)]" 
+            ? "border-txt-primary bg-element/80 shadow-[0_0_50px_-10px_var(--accent-glow)] outline-none" 
             : "border-border-main bg-card hover:border-border-strong"
         )}
       >
@@ -69,10 +87,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
 
           <div className="space-y-3">
             <h3 className="text-2xl font-bold text-txt-primary font-sans tracking-tight">
-              {isDragActive ? "Drop File" : "Upload your PDF"}
+              {isDragActive ? "Drop File" : label}
             </h3>
             <p className="text-sm text-txt-secondary max-w-xs mx-auto font-medium">
-              Files up to 10MB. <br/> Processed entirely on your device.
+              {subLabel}
             </p>
           </div>
         </div>
