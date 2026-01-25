@@ -56,7 +56,7 @@ export default function LandingPage() {
             </h1>
             <p className="text-xl text-txt-secondary max-w-xl mx-auto leading-relaxed font-normal">
               Essential utilities for your documents<br/>
-              <span className="text-txt-primary font-medium">Client-side only. Zero data collected.</span>
+              <span className="text-txt-primary font-medium">Welcome to PDF Editx</span>
             </p>
              <div className="pt-2">
                 <a 

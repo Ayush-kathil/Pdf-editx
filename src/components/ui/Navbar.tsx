@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ui/theme-provider';
 import { ChevronLeft, Moon, Sun, ShieldCheck } from 'lucide-react';
@@ -37,7 +38,18 @@ export function Navbar() {
           )}
         </div>
 
-
+        {/* Center: Logo */}
+        <div className="flex-1 flex justify-center items-center">
+            <Link href="/" className="relative w-12 h-12 hover:scale-105 transition-transform duration-300">
+               <Image 
+                 src="/logo.png" 
+                 alt="App Logo" 
+                 fill 
+                 className="object-contain" 
+                 priority 
+               />
+            </Link>
+        </div>
 
         {/* Right Side: Theme Toggle */}
         <div className="flex items-center justify-end w-20">
