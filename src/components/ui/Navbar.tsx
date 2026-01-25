@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ui/theme-provider';
 import { ChevronLeft, Moon, Sun, ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const isHome = pathname === '/';
+  
+  const { scrollY } = useScroll();
+  const rotate = useTransform(scrollY, [0, 1000], [0, 360]);
 
   return (
     <motion.nav 
@@ -34,13 +37,7 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Center: Brand (Floating Pill) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-             <div className="flex items-center space-x-2 bg-card/80 backdrop-blur-3xl px-6 py-3 rounded-full border border-border-main shadow-lg hover:scale-105 transition-transform duration-500 cursor-default">
-                <ShieldCheck className="w-5 h-5 text-txt-primary" />
-                <span className="font-semibold text-lg tracking-tight text-txt-primary">Ayush PDF Editx</span>
-             </div>
-        </div>
+
 
         {/* Right Side: Theme Toggle */}
         <div className="flex items-center justify-end w-20">

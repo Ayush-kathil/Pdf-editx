@@ -1,72 +1,80 @@
-# Secure Aadhaar PDF Suite
+# Secure PDF & Image Suite
 
-A client-side utility suite for processing Aadhaar PDF documents securely.
-Designed with privacy as the core implementation detail—no data ever leaves the
-user's browser.
+A premium, privacy-focused web application for managing PDF and Image files
+securely in your browser. All processing happens locally on your device—no files
+are ever uploaded to a server.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+## 🛡️ Features
 
-## Features
+### 1. PDF Tools
 
-- **Local PDF Unlocker**: Decrypts Aadhaar PDFs using the standard naming
-  convention (First 4 letters + YOB) without server transmission.
-- **Client-Side Compression**: Optimized engine to reduce PDF file size
-  efficiently in-memory.
-- **Zero-Knowledge Architecture**:
-  - All processing is handled by WebAssembly and JavaScript workers in the
-    browser.
-  - No database, no API uploads, no persistent storage.
-  - Memory is explicitly cleared upon session reset.
-- **Premium UI**:
-  - High-contrast monochromatic design system.
-  - Fluid spring physics animations for a native-app feel.
-  - Fully responsive layout.
+- **Unlock Content**: Remove password restrictions derived from standard
+  Aadhaar/Bank formats or generic passwords.
+- **Compress PDF**: Optimize PDF file size efficiently while maintaining
+  readability.
 
-## Tech Stack
+### 2. Image Tools
 
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: Tailwind CSS
-- **Code**: TypeScript
-- **PDF Engine**: `pdf-lib` + `pdf.js` (Custom implementation for client-side
-  rasterization)
-- **Motion**: Framer Motion
+- **Image Compressor**: Intelligent compression for JPG, PNG, and WebP.
+  - **Target Size Mode**: Specify a max size (e.g., "100KB") and the algorithm
+    auto-adjusts quality.
+  - **Quality Mode**: Manually fine-tune compression levels.
 
-## Getting Started
+### 3. Security & Privacy
 
-1. **Clone the repository**
+- **Zero Knowledge**: Uses WebAssembly and HTML5 Canvas to process files
+  client-side.
+- **Local Encryption**: Strict Content Security Policy (CSP) prevents external
+  data exfiltration.
+- **No Analytics**: No tracking scripts or cookies.
+
+### 4. Modern UI/UX
+
+- **Apple-Style Design**: Minimalist, clean aesthetics with smooth spring
+  animations.
+- **Dark/Light Mode**: Fully responsive theme system.
+- **Mobile Optimized**: Works perfectly on phones, tablets, and desktops.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
    ```bash
    git clone https://github.com/Ayush-kathil/Pdf-editx.git
    cd Pdf-editx
    ```
 
-2. **Install dependencies**
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. **Run development server**
+3. Run the development server:
    ```bash
    npm run dev
    ```
 
-4. **Build for production**
-   ```bash
-   npm run build
-   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Security & Privacy Model
+## 🛠️ Technology Stack
 
-This project adheres to a strict "Local-Only" policy.
+- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **PDF Processing**: `pdf-lib`
+- **Image Processing**: Native Canvas API
 
-- **No Fetches**: The codebase contains zero external API calls for file data.
-- **CSP**: Strict Content-Security-Policy allows only `self` connections.
-- **Volatile Memory**: Files are processed in RAM and destroyed on tab closure.
+## 🤝 Contributing
 
-## Developer
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-**Ayush Gupta**\
-[GitHub](https://github.com/Ayush-kathil) •
-[LinkedIn](https://www.linkedin.com/in/ayushkathil) •
-[Portfolio](https://ayushgupta3.vercel.app)
+## 📄 License
+
+This project is licensed under the MIT License.

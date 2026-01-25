@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Mode (Apple Style) */
+  /* Light Mode (Modern & Clean) */
   --bg-page: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.7);
-  --bg-element: #f5f5f7; /* Apple gray */
-  --bg-element-hover: #e8e8ed;
+  --bg-card: #f4f4f5; /* Zinc-100: Distinctly darker than white page */
+  --bg-element: #e4e4e7; /* Zinc-200: Input/Button backgrounds */
+  --bg-element-hover: #d4d4d8;
   
-  --text-primary: #1d1d1f; /* Apple dark gray */
-  --text-secondary: #86868b; /* Apple medium gray */
-  --text-tertiary: #a1a1a6;
+  --text-primary: #18181b; /* Zinc-950 */
+  --text-secondary: #52525b; /* Zinc-600 */
+  --text-tertiary: #a1a1aa;
   
-  --border-color: #d2d2d7;
-  --border-strong: #424245;
+  --border-color: #e4e4e7;
+  --border-strong: #d4d4d8;
   
-  --accent-glow: rgba(0, 0, 0, 0.1);
+  --accent-glow: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='dark'] {
-  /* Dark Mode (Premium) */
+  /* Dark Mode (High End) */
   --bg-page: #000000;
-  --bg-card: rgba(28, 28, 30, 0.7);
-  --bg-element: #1c1c1e;
-  --bg-element-hover: #2c2c2e;
+  --bg-card: #121212; /* Subtle Off-Black card */
+  --bg-element: #27272a; /* Zinc-800 */
+  --bg-element-hover: #3f3f46;
   
-  --text-primary: #f5f5f7;
-  --text-secondary: #86868b;
-  --text-tertiary: #6e6e73;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #52525b;
   
-  --border-color: #38383a;
-  --border-strong: #48484a;
+  --border-color: #27272a;
+  --border-strong: #3f3f46;
   
-  --accent-glow: rgba(255, 255, 255, 0.1);
+  --accent-glow: rgba(255, 255, 255, 0.05);
 }
 
 @theme inline {

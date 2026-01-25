@@ -51,12 +51,12 @@ export default function LandingPage() {
           <motion.header variants={fadeInUp} className="mb-16 text-center space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold text-txt-primary tracking-tighter leading-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-tr from-txt-primary to-txt-secondary">
-                Ayush PDF Suite.
+                PDF Editx
               </span>
             </h1>
             <p className="text-xl text-txt-secondary max-w-xl mx-auto leading-relaxed">
-              Classical tools for your critical documents. <br/>
-              <span className="text-txt-primary">Processed securely in your browser.</span>
+              Classical tools for your critical documents<br/>
+              <span className="text-txt-primary">Processed securely in your browser</span>
             </p>
              <div className="pt-2">
                 <a 
@@ -65,7 +65,7 @@ export default function LandingPage() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-txt-tertiary hover:text-txt-primary transition-colors border-b border-border-main hover:border-txt-primary pb-0.5"
                 >
-                    <span>Official e-Aadhaar Download</span>
+                    <span>e-Aadhaar Download</span>
                     <span className="text-[10px]">↗</span>
                 </a>
             </div>
@@ -85,22 +85,20 @@ export default function LandingPage() {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     whileHover={{ scale: 1.02, y: -10 }}
                     whileTap={{ scale: 0.98 }}
-                    className="h-[400px] rounded-[2.5rem] bg-card hover:bg-element border border-border-main hover:border-border-strong p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-sm hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
                                 <ShieldCheck className="w-10 h-10 text-txt-primary stroke-[1.5]" />
                             </div>
                             <h2 className="text-3xl font-bold text-txt-primary mb-3">Unlock PDF</h2>
                             <p className="text-txt-secondary text-lg leading-relaxed">Remove password protection securely. No uploads.</p>
                          </div>
                     
-                         <div className="flex items-center text-txt-primary font-semibold group/btn text-base mt-4">
+                         <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                          </div>
                     </div>
                 </motion.div>
@@ -113,24 +111,21 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                    whileHover={{ scale: 1.02, y: -10 }}
                     whileTap={{ scale: 0.98 }}
-                    className="h-[400px] rounded-[2.5rem] bg-card hover:bg-element border border-border-main hover:border-border-strong p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-sm hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
                                 <FileDown className="w-10 h-10 text-txt-primary stroke-[1.5]" />
                             </div>
                             <h2 className="text-3xl font-bold text-txt-primary mb-3">Compress PDF</h2>
                             <p className="text-txt-secondary text-lg leading-relaxed">Reduce file size locally. <br/>Efficient and fast.</p>
                          </div>
 
-                         <div className="flex items-center text-txt-primary font-semibold group/btn text-base mt-4">
+                         <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                          </div>
                     </div>
                 </motion.div>
@@ -143,24 +138,21 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                    whileHover={{ scale: 1.02, y: -10 }}
                     whileTap={{ scale: 0.98 }}
-                    className="h-[400px] rounded-[2.5rem] bg-card hover:bg-element border border-border-main hover:border-border-strong p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-sm hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
                                 <ImageIcon className="w-10 h-10 text-txt-primary stroke-[1.5]" />
                             </div>
                             <h2 className="text-3xl font-bold text-txt-primary mb-3">Compress Image</h2>
                             <p className="text-txt-secondary text-lg leading-relaxed">Optimize photos to target size. <br/>JPG, PNG, WebP.</p>
                         </div>
                         
-                        <div className="flex items-center text-txt-primary font-semibold group/btn text-base mt-4">
+                        <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                         </div>
                     </div>
                 </motion.div>
