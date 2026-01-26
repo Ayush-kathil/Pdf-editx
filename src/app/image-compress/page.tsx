@@ -6,6 +6,7 @@ import { Image as ImageIcon, Download, RefreshCw, X, ShieldCheck } from 'lucide-
 import { FileUpload } from '@/components/ui/FileUpload';
 import { compressImage } from '@/lib/image-utils';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 const springTransition = {
   type: "spring" as const,
@@ -105,7 +106,8 @@ export default function ImageCompressPage() {
       
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-         <div className="absolute top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-element/20 rounded-full blur-[150px] opacity-40" />
+         <div className="absolute top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-element/20 rounded-full blur-[150px] opacity-40 animate-pulse-slow" />
+         <div className="absolute bottom-[-20%] right-[-20%] w-[60vw] h-[60vw] bg-zinc-800/20 rounded-full blur-[150px] opacity-30" />
       </div>
 
       <motion.div 
@@ -144,7 +146,14 @@ export default function ImageCompressPage() {
                   animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, scale: 0.9, y: -20, filter: 'blur(10px)' }}
                   transition={springTransition}
+                  className="relative"
                 >
+                    <Link 
+                        href="/"
+                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
+                    >
+                        <span>← Back</span>
+                    </Link>
                   <FileUpload 
                     onFileSelect={handleFileSelect} 
                     accept={{ 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'], 'image/webp': ['.webp'] }}
@@ -169,97 +178,107 @@ export default function ImageCompressPage() {
                    className="bg-card backdrop-blur-2xl border border-border-main shadow-xl p-8 md:p-10 rounded-[2.5rem] relative overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent pointer-events-none" />
-
-                    <h2 className="text-2xl font-bold mb-6 text-txt-primary">Compression Settings</h2>
                     
-                    {/* Image Preview */}
-                    {previewUrl && (
-                        <div className="mb-8 w-full flex justify-center">
-                            <div className="relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg border border-border-main bg-element/50">
-                                <img 
-                                    src={previewUrl} 
-                                    alt="Preview" 
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* Mode Toggle */}
-                    <div className="flex bg-element p-1 rounded-xl mb-8">
-                        <button 
-                            onClick={() => setCompressionMode('QUALITY')}
-                            className={clsx(
-                                "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
-                                compressionMode === 'QUALITY' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
-                            )}
-                        >
-                            Custom Quality
-                        </button>
-                        <button 
-                            onClick={() => setCompressionMode('SIZE')}
-                            className={clsx(
-                                "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
-                                compressionMode === 'SIZE' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
-                            )}
-                        >
-                            Target Size
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => setStep('UPLOAD')}
+                        className="absolute top-6 right-6 text-txt-tertiary hover:text-txt-primary transition-colors p-2 hover:bg-element-hover rounded-full z-10"
+                        title="Cancel"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
 
-                    {/* Controls */}
-                    <div className="mb-8 space-y-6">
-                        {compressionMode === 'QUALITY' ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between text-txt-primary font-medium">
-                                    <span>Quality Level</span>
-                                    <span>{Math.round(quality * 100)}%</span>
+                    <h2 className="text-2xl font-bold mb-6 text-txt-primary relative z-10">Compression Settings</h2>
+                    
+                    <div className="relative z-10">
+                        {/* Image Preview */}
+                        {previewUrl && (
+                            <div className="mb-8 w-full flex justify-center">
+                                <div className="relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg border border-border-main bg-element/50">
+                                    <img 
+                                        src={previewUrl} 
+                                        alt="Preview" 
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
-                                <input 
-                                    type="range" 
-                                    min="0.1" 
-                                    max="1" 
-                                    step="0.1" 
-                                    value={quality} 
-                                    onChange={(e) => setQuality(parseFloat(e.target.value))}
-                                    className="w-full h-2 bg-element rounded-lg appearance-none cursor-pointer accent-txt-primary"
-                                />
-                                <p className="text-sm text-txt-secondary">Lower quality = Smaller size</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <label className="block text-txt-primary font-medium">Max File Size (KB)</label>
-                                <input 
-                                    type="number" 
-                                    value={targetSizeKB}
-                                    onChange={(e) => setTargetSizeKB(parseInt(e.target.value) || 0)}
-                                    className="w-full px-5 py-4 rounded-xl bg-element border border-border-main focus:border-txt-primary outline-none text-txt-primary"
-                                />
-                                <p className="text-sm text-txt-secondary">We will try to compress under this limit.</p>
                             </div>
                         )}
                         
-                        <div className="bg-element/50 p-4 rounded-xl border border-border-main">
-                            <span className="text-txt-secondary text-sm">Original Size: </span>
-                            <span className="text-txt-primary font-bold">{formatSize(file?.size || 0)}</span>
+                        {/* Mode Toggle */}
+                        <div className="flex bg-element p-1 rounded-xl mb-8">
+                            <button 
+                                onClick={() => setCompressionMode('QUALITY')}
+                                className={clsx(
+                                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
+                                    compressionMode === 'QUALITY' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
+                                )}
+                            >
+                                Custom Quality
+                            </button>
+                            <button 
+                                onClick={() => setCompressionMode('SIZE')}
+                                className={clsx(
+                                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
+                                    compressionMode === 'SIZE' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
+                                )}
+                            >
+                                Target Size
+                            </button>
                         </div>
-                    </div>
 
-                    <button 
-                         onClick={handleCompress}
-                         disabled={isProcessing}
-                         className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
-                    >
-                         {isProcessing ? "Compressing..." : "Compress Image"}
-                    </button>
+                        {/* Controls */}
+                        <div className="mb-8 space-y-6">
+                            {compressionMode === 'QUALITY' ? (
+                                <div className="space-y-4">
+                                    <div className="flex justify-between text-txt-primary font-medium">
+                                        <span>Quality Level</span>
+                                        <span>{Math.round(quality * 100)}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" 
+                                        min="0.1" 
+                                        max="1" 
+                                        step="0.1" 
+                                        value={quality} 
+                                        onChange={(e) => setQuality(parseFloat(e.target.value))}
+                                        className="w-full h-2 bg-element rounded-lg appearance-none cursor-pointer accent-txt-primary"
+                                    />
+                                    <p className="text-sm text-txt-secondary">Lower quality = Smaller size</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <label className="block text-txt-primary font-medium">Max File Size (KB)</label>
+                                    <input 
+                                        type="number" 
+                                        value={targetSizeKB}
+                                        onChange={(e) => setTargetSizeKB(parseInt(e.target.value) || 0)}
+                                        className="w-full px-5 py-4 rounded-xl bg-element border border-border-main focus:border-txt-primary outline-none text-txt-primary"
+                                    />
+                                    <p className="text-sm text-txt-secondary">We will try to compress under this limit.</p>
+                                </div>
+                            )}
+                            
+                            <div className="bg-element/50 p-4 rounded-xl border border-border-main">
+                                <span className="text-txt-secondary text-sm">Original Size: </span>
+                                <span className="text-txt-primary font-bold">{formatSize(file?.size || 0)}</span>
+                            </div>
+                        </div>
+
+                        <button 
+                             onClick={handleCompress}
+                             disabled={isProcessing}
+                             className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
+                        >
+                             {isProcessing ? "Compressing..." : "Compress Image"}
+                        </button>
+                    </div>
                 </motion.div>
               )}
 
               {step === 'SUCCESS' && (
                 <motion.div
                   key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, scale: 0.9, rotateX: -10 }}
+                  animate={{ opacity: 1, scale: 1, rotateX: 0 }}
                   transition={springTransition}
                   className="bg-card backdrop-blur-3xl border border-border-main shadow-2xl p-12 rounded-[3rem] flex flex-col items-center text-center w-full relative overflow-hidden"
                 >
@@ -308,7 +327,7 @@ export default function ImageCompressPage() {
            {/* Footer / Legal */}
            <motion.footer variants={fadeInUp} className="mt-16 text-center text-xs text-txt-tertiary space-y-4 pb-8">
              <div className="flex justify-center space-x-8">
-               <a href="/" className="hover:text-txt-primary transition-colors">Back to Home</a>
+                 <span className="opacity-50">Secure Local Processing</span>
              </div>
           </motion.footer>
 

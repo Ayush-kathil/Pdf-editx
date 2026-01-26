@@ -6,6 +6,7 @@ import { FileDown, Download, RefreshCw, X, ShieldCheck, FileInput } from 'lucide
 import { FileUpload } from '@/components/ui/FileUpload';
 import { compressPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 const springTransition = {
   type: "spring" as const,
@@ -76,7 +77,8 @@ export default function CompressPage() {
       
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-         <div className="absolute top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-element/20 rounded-full blur-[150px] opacity-40" />
+         <div className="absolute top-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-element/20 rounded-full blur-[150px] opacity-40 animate-pulse-slow" />
+         <div className="absolute bottom-[-20%] right-[-20%] w-[60vw] h-[60vw] bg-zinc-800/20 rounded-full blur-[150px] opacity-30" />
       </div>
 
       <motion.div 
@@ -115,8 +117,15 @@ export default function CompressPage() {
                   animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, scale: 0.9, y: -20, filter: 'blur(10px)' }}
                   transition={springTransition}
-                  className="space-y-8"
+                  className="space-y-8 relative"
                 >
+                  <Link 
+                        href="/"
+                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
+                    >
+                        <span>← Back</span>
+                    </Link>
+
                   <FileUpload onFileSelect={handleFileSelect} />
                   
                   {/* Simple Quality Selector */}
@@ -138,15 +147,20 @@ export default function CompressPage() {
                   </div>
 
                   {isProcessing && (
-                      <div className="text-center text-txt-tertiary text-sm animate-pulse">
-                          Compressing...
+                      <div className="text-center text-txt-tertiary text-sm animate-pulse flex items-center justify-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Compressing...</span>
                       </div>
                   )}
 
                   {error && (
-                    <div className="text-red-500 text-sm bg-red-500/10 p-4 rounded-xl text-center border border-red-500/20">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
+                    >
                         {error}
-                    </div>
+                    </motion.div>
                   )}
                 </motion.div>
               )}
@@ -154,8 +168,8 @@ export default function CompressPage() {
               {step === 'SUCCESS' && (
                 <motion.div
                   key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, scale: 0.9, rotateX: -10 }}
+                  animate={{ opacity: 1, scale: 1, rotateX: 0 }}
                   transition={springTransition}
                   className="bg-card backdrop-blur-3xl border border-border-main shadow-2xl p-12 rounded-[3rem] flex flex-col items-center text-center w-full relative overflow-hidden"
                 >
@@ -175,14 +189,14 @@ export default function CompressPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDownload}
-                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-bg-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
+                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
                     >
                       <Download className="w-6 h-6" />
                       <span>Save Compressed PDF</span>
                     </motion.button>
                     
                     <motion.button
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleReset}
                       className="w-full py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
@@ -200,11 +214,30 @@ export default function CompressPage() {
            {/* Footer / Legal */}
            <motion.footer variants={fadeInUp} className="mt-16 text-center text-xs text-txt-tertiary space-y-4 pb-8">
              <div className="flex justify-center space-x-8">
-               <a href="/" className="hover:text-txt-primary transition-colors">Back to Home</a>
+               <span className="opacity-50">Secure Local Processing</span>
              </div>
           </motion.footer>
 
       </motion.div>
     </main>
   );
+}
+
+function Loader2(props: any) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            {...props}
+        >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+    )
 }

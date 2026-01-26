@@ -85,7 +85,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     whileHover={{ scale: 1.02, y: -10 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
@@ -112,7 +112,7 @@ export default function LandingPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
@@ -139,7 +139,7 @@ export default function LandingPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card hover:bg-element border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl"
+                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
