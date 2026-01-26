@@ -7,6 +7,9 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 export const metadata: Metadata = {
   title: 'PDF Editx | Secure PDF & Image Suite',
   description: 'A premium, privacy-focused web application for managing PDF and Image files securely in your browser. All processing happens locally on your device—no files are ever uploaded to a server.',
+};
+
+export const viewport = {
   themeColor: '#0f172a',
 };
 

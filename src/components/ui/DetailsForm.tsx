@@ -68,7 +68,7 @@ export const DetailsForm: React.FC<DetailsFormProps> = ({ onSubmit, isProcessing
         disabled={isProcessing || !name || yob.length !== 4}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-bg-page shadow-lg transition-all font-bold text-xl flex items-center justify-center space-x-3 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+        className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page shadow-lg transition-all font-bold text-xl flex items-center justify-center space-x-3 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
       >
         {isProcessing ? (
           <>

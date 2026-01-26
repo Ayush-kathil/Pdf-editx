@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Download, RefreshCw, X } from 'lucide-react';
+import { ShieldCheck, Download, RefreshCw, X, FileText, Lock } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { DetailsForm } from '@/components/ui/DetailsForm';
-import { unlockPdf, derivePassword, createMemoryCleaner } from '@/lib/pdf-utils';
+import { PasswordForm } from '@/components/ui/PasswordForm';
+import { unlockPdf, derivePassword } from '@/lib/pdf-utils';
 
 const springTransition = {
   type: "spring" as const,
@@ -34,12 +35,23 @@ const fadeInUp = {
   },
 };
 
+type UnlockMode = 'AADHAR' | 'NORMAL';
+type Step = 'MODE_SELECTION' | 'UPLOAD' | 'DETAILS' | 'SUCCESS';
+
 export default function Home() {
-  const [step, setStep] = useState<'UPLOAD' | 'DETAILS' | 'SUCCESS'>('UPLOAD');
+  const [step, setStep] = useState<Step>('MODE_SELECTION');
+  const [mode, setMode] = useState<UnlockMode>('AADHAR');
   const [file, setFile] = useState<File | null>(null);
   const [unlockedPdf, setUnlockedPdf] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // specific handlers
+  const handleModeSelect = (selectedMode: UnlockMode) => {
+    setMode(selectedMode);
+    setStep('UPLOAD');
+    setError(null);
+  };
 
   // File selection handler
   const handleFileSelect = (selectedFile: File) => {
@@ -48,27 +60,31 @@ export default function Home() {
     setError(null);
   };
 
-  // Processing handler
-  const handleUnlock = async (name: string, yob: string) => {
+  // Processing handler for Aadhar
+  const handleAadharUnlock = async (name: string, yob: string) => {
     if (!file) return;
-    
+    performUnlock(() => derivePassword(name, yob));
+  };
+
+  // Processing handler for Normal PDF
+  const handleNormalUnlock = async (password: string) => {
+    if (!file) return;
+    performUnlock(async () => password); // Password is direct
+  };
+
+  const performUnlock = async (getPassword: () => Promise<string> | string) => {
     setIsProcessing(true);
     setError(null);
     
     try {
-      // 1. Derive Password
-      const password = derivePassword(name, yob);
-      
-      // 2. Read File as ArrayBuffer
-      const fileBuffer = await file.arrayBuffer();
-      
-      // 3. Unlock (Client-Side)
+      const password = await getPassword();
+      const fileBuffer = await file!.arrayBuffer();
       const unlockedBytes = await unlockPdf(fileBuffer, password);
       
       setUnlockedPdf(unlockedBytes);
       setStep('SUCCESS');
     } catch (err: any) {
-      setError(err.message || 'Failed to unlock PDF. Please check the details.');
+      setError(err.message || 'Failed to unlock PDF. Please check the details/password.');
     } finally {
       setIsProcessing(false);
     }
@@ -76,14 +92,9 @@ export default function Home() {
 
   // Reset/Cleanup handler
   const handleReset = () => {
-    // Explicit memory cleanup
-    if (unlockedPdf) {
-      // In JS we just drop the reference
-      // but if we had manual buffers we'd clear them
-    }
     setFile(null);
     setUnlockedPdf(null);
-    setStep('UPLOAD');
+    setStep('MODE_SELECTION');
     setError(null);
   };
 
@@ -126,7 +137,7 @@ export default function Home() {
             
             <div className="space-y-3">
                 <h1 className="text-5xl md:text-6xl font-bold text-txt-primary tracking-tighter leading-tight">
-                Secure Aadhaar.
+                Secure Unlock.
                 </h1>
                 <p className="text-lg md:text-xl text-txt-secondary max-w-lg mx-auto leading-relaxed font-normal">
                 Unlock your PDF locally. <br/>
@@ -134,22 +145,24 @@ export default function Home() {
                 </p>
             </div>
 
-            {/* External Link Section */}
-            <motion.div 
-                className="pt-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                <a 
-                    href="https://myaadhaar.uidai.gov.in/genricDownloadAadhaar/en" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-element border border-border-main hover:bg-element-hover hover:border-txt-primary transition-all group"
+            {/* External Link Section - Only display if initially desired or relevant */}
+            {step === 'MODE_SELECTION' && (
+                <motion.div 
+                    className="pt-2"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                 >
-                    <span className="text-xs font-medium text-txt-secondary group-hover:text-txt-primary transition-colors">Download e-Aadhaar from UIDAI</span>
-                    <span className="text-[10px] text-txt-tertiary group-hover:text-txt-secondary">↗</span>
-                </a>
-            </motion.div>
+                    <a 
+                        href="https://myaadhaar.uidai.gov.in/genricDownloadAadhaar/en" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-element border border-border-main hover:bg-element-hover hover:border-txt-primary transition-all group"
+                    >
+                        <span className="text-xs font-medium text-txt-secondary group-hover:text-txt-primary transition-colors">Download e-Aadhaar from UIDAI</span>
+                        <span className="text-[10px] text-txt-tertiary group-hover:text-txt-secondary">↗</span>
+                    </a>
+                </motion.div>
+            )}
           </motion.header>
 
           {/* Main Content Area */}
@@ -159,6 +172,47 @@ export default function Home() {
           >
             <AnimatePresence mode="wait">
               
+              {step === 'MODE_SELECTION' && (
+                <motion.div
+                  key="mode"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={springTransition}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl"
+                >
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleModeSelect('AADHAR')}
+                        className="flex flex-col items-center justify-center p-8 rounded-[2.5rem] bg-card border border-border-main shadow-xl hover:border-txt-primary hover:shadow-2xl transition-all group"
+                    >
+                        <div className="p-4 rounded-2xl bg-element group-hover:bg-element-hover transition-colors mb-6">
+                            <ShieldCheck className="w-8 h-8 text-txt-primary" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-txt-primary mb-2">Aadhaar</h3>
+                        <p className="text-sm text-txt-secondary text-center px-4">
+                            Unlock e-Aadhaar using Name & Year of Birth.
+                        </p>
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleModeSelect('NORMAL')}
+                        className="flex flex-col items-center justify-center p-8 rounded-[2.5rem] bg-card border border-border-main shadow-xl hover:border-txt-primary hover:shadow-2xl transition-all group"
+                    >
+                        <div className="p-4 rounded-2xl bg-element group-hover:bg-element-hover transition-colors mb-6">
+                            <Lock className="w-8 h-8 text-txt-primary" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-txt-primary mb-2">PDF</h3>
+                        <p className="text-sm text-txt-secondary text-center px-4">
+                            Unlock standard PDFs using your password.
+                        </p>
+                    </motion.button>
+                </motion.div>
+              )}
+
               {step === 'UPLOAD' && (
                 <motion.div
                   key="upload"
@@ -166,8 +220,19 @@ export default function Home() {
                   animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, scale: 0.9, y: -20, filter: 'blur(10px)' }}
                   transition={springTransition}
+                  className="relative"
                 >
-                  <FileUpload onFileSelect={handleFileSelect} />
+                  <button 
+                        onClick={() => setStep('MODE_SELECTION')}
+                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
+                    >
+                        <span>← Back</span>
+                    </button>
+                  <FileUpload 
+                    onFileSelect={handleFileSelect} 
+                    label={mode === 'AADHAR' ? "Upload e-Aadhaar" : "Upload Locked PDF"}
+                    subLabel={mode === 'AADHAR' ? "Upload your password-protected e-Aadhaar PDF" : "Upload any password-protected PDF file"}
+                  />
                 </motion.div>
               )}
 
@@ -192,16 +257,25 @@ export default function Home() {
                     </button>
                     
                     <div className="relative z-10">
-                        <h2 className="text-3xl font-bold mb-8 text-txt-primary tracking-tight">Enter Details</h2>
-                        <div className="bg-element/50 border border-border-main p-4 rounded-2xl mb-8 flex gap-4 items-start">
-                            <div className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-txt-primary shadow-sm" />
-                            <p className="text-sm text-txt-secondary leading-relaxed">
-                                We derive the password from your <span className="text-txt-primary font-medium">Name</span> and <span className="text-txt-primary font-medium">Year of Birth</span>. 
-                                This happens strictly on your device.
-                            </p>
-                        </div>
+                        <h2 className="text-3xl font-bold mb-8 text-txt-primary tracking-tight">
+                            {mode === 'AADHAR' ? 'Enter Details' : 'Enter Password'}
+                        </h2>
                         
-                        <DetailsForm onSubmit={handleUnlock} isProcessing={isProcessing} />
+                        {mode === 'AADHAR' && (
+                            <div className="bg-element/50 border border-border-main p-4 rounded-2xl mb-8 flex gap-4 items-start">
+                                <div className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-txt-primary shadow-sm" />
+                                <p className="text-sm text-txt-secondary leading-relaxed">
+                                    We derive the password from your <span className="text-txt-primary font-medium">Name</span> and <span className="text-txt-primary font-medium">Year of Birth</span>. 
+                                    This happens strictly on your device.
+                                </p>
+                            </div>
+                        )}
+                        
+                        {mode === 'AADHAR' ? (
+                            <DetailsForm onSubmit={handleAadharUnlock} isProcessing={isProcessing} />
+                        ) : (
+                            <PasswordForm onSubmit={handleNormalUnlock} isProcessing={isProcessing} />
+                        )}
                         
                         {error && (
                             <motion.div 
@@ -242,7 +316,7 @@ export default function Home() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleDownload}
-                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-bg-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
+                      className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
                     >
                       <Download className="w-6 h-6" />
                       <span>Save PDF</span>
