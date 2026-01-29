@@ -1,84 +1,75 @@
-# Secure PDF & Image Suite
+<div align="center">
+  <a href="https://pdfeditx.vercel.app">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Product+Sans&weight=700&size=50&pause=1000&color=white&center=true&vCenter=true&width=600&lines=Secure+PDF+%26+Image+Suite;Privacy.+Speed.+Control." alt="Typing SVG" />
+  </a>
 
-A privacy-first document utility suite engineered with **Next.js 14**,
-**TypeScript**, and **WebAssembly**.
+  <h3 align="center">Next-Gen Document Utility Engineered with Next.js 14</h3>
 
-This application processes sensitive files (PDFs, Images) entirely within the
-browser client. By leveraging the HTML5 Canvas API and `pdf-lib`, it eliminates
-the need for server-side processing, ensuring **Zero Knowledge** architecture
-where user data never leaves the device.
+  <p align="center">
+    A <b>Zero-Knowledge</b> architecture where your sensitive documents never leave your browser.<br>
+    Powered by <b>WebAssembly</b> and <b>Client-Side Processing</b>.
+  </p>
 
-## 🛡️ Features
+  <div align="center">
+    <a href="https://pdfeditx.vercel.app">
+      <img src="https://img.shields.io/badge/Live_Demo-Launch_App-0F9D58?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" />
+    </a>
+    <a href="https://github.com/Ayush-kathil/Pdf-editx">
+      <img src="https://img.shields.io/badge/Repo-View_Code-202124?style=for-the-badge&logo=github&logoColor=white" alt="Repo" />
+    </a>
+  </div>
+</div>
 
-### 1. PDF Tools
+<br/>
 
-- **Unlock Content**: Remove password restrictions derived from standard
-  Aadhaar/Bank formats or generic passwords.
-- **Compress PDF**: Optimize PDF file size efficiently while maintaining
-  readability.
+## ⚡ The Engineering Philosophy
 
-### 2. Image Tools
+**PDFEditX** is a privacy-first utility suite designed to solve a specific problem: *How do we manipulate sensitive documents (like Bank Statements or Aadhaar Cards) without trusting a third-party server?*
 
-- **Image Compressor**: Intelligent compression for JPG, PNG, and WebP.
-  - **Target Size Mode**: Specify a max size (e.g., "100KB") and the algorithm
-    auto-adjusts quality.
-  - **Quality Mode**: Manually fine-tune compression levels.
+* **Zero Latency:** By leveraging the **HTML5 Canvas API** and **`pdf-lib`**, operations happen instantly on your device.
+* **Zero Knowledge:** No file uploads. No server-side storage. Strict **Content Security Policy (CSP)** prevents data exfiltration.
+* **Modern Core:** Built on the bleeding edge with **Next.js 14 (App Router)** and **TypeScript**.
 
-### 3. Security & Privacy
+---
 
-- **Zero Knowledge**: Uses WebAssembly and HTML5 Canvas to process files
-  client-side.
-- **Local Encryption**: Strict Content Security Policy (CSP) prevents external
-  data exfiltration.
-- **No Analytics**: No tracking scripts or cookies.
+## 🛠️ The Toolkit
 
-### 4. Modern UI/UX
+### 📄 Core PDF Operations
+| Feature | Description | Tech |
+| :--- | :--- | :--- |
+| **🔀 Merge PDFs** | Combine multiple documents into a single cohesive file with drag-and-drop reordering. | `pdf-lib` |
+| **✂️ Split PDFs** | Extract specific pages or split a large document into individual files instantly. | `ArrayBuffer` |
+| **🔓 Unlock PDF** | Remove password restrictions derived from standard formats (e.g., Aadhaar, Bank Statements) or generic passwords. | `Client Encryption` |
+| **📉 Compress PDF** | Smart optimization to reduce file size while maintaining text clarity and readability. | `Compression Alg` |
 
-- **Apple-Style Design**: Minimalist, clean aesthetics with smooth spring
-  animations.
-- **Dark/Light Mode**: Fully responsive theme system.
-- **Mobile Optimized**: Works perfectly on phones, tablets, and desktops.
+### 🖼️ Image Intelligence
+| Feature | Description | Mode |
+| :--- | :--- | :--- |
+| **🖼️ Image to PDF** | Convert JPG, PNG, or WebP images into a standardized PDF document. | `Canvas API` |
+| **⚡ Smart Compress** | **Target Size Mode:** Specify "100KB" and the AI logic auto-adjusts quality to match.<br>**Quality Mode:** Manual slider control. | `Blob Logic` |
+
+---
+
+## 💻 Tech Stack
+
+| **Framework & Core** | **Processing & Logic** | **UI & UX** |
+| :--- | :--- | :--- |
+| ![Next.js](https://img.shields.io/badge/-Next.js_14-000000?style=flat-square&logo=next.js&logoColor=white) | ![WebAssembly](https://img.shields.io/badge/-WebAssembly-654FF0?style=flat-square&logo=webassembly&logoColor=white) | ![Tailwind](https://img.shields.io/badge/-Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) |
+| ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) | ![PDF-Lib](https://img.shields.io/badge/-PDF_Lib-FF6F00?style=flat-square&logo=javascript&logoColor=white) | ![Framer](https://img.shields.io/badge/-Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white) |
+
+---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+Clone the repository and run the engine locally in 3 steps.
 
-- Node.js 18+
-- npm or yarn
+```bash
+# 1. Clone the repository
+git clone [https://github.com/Ayush-kathil/Pdf-editx.git](https://github.com/Ayush-kathil/Pdf-editx.git)
+cd Pdf-editx
 
-### Installation
+# 2. Install dependencies
+npm install
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Ayush-kathil/Pdf-editx.git
-   cd Pdf-editx
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🛠️ Technology Stack
-
-- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **PDF Processing**: `pdf-lib`
-- **Image Processing**: Native Canvas API
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
+# 3. Ignite the dev server
+npm run dev
