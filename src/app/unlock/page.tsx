@@ -54,7 +54,8 @@ export default function Home() {
   };
 
   // File selection handler
-  const handleFileSelect = (selectedFile: File) => {
+  const handleFileSelect = (selectedFile: File | File[]) => {
+    if (Array.isArray(selectedFile)) return;
     setFile(selectedFile);
     setStep('DETAILS');
     setError(null);

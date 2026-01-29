@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw } from 'lucide-react';
 
 const springTransition = {
   type: "spring" as const,
@@ -33,14 +33,121 @@ const fadeInUp = {
 };
 
 export default function LandingPage() {
+  const [showIntro, setShowIntro] = React.useState(true);
+  const [message, setMessage] = React.useState("");
+
+  React.useEffect(() => {
+    const funnyMessages = [
+        "Convincing the pixels to cooperate... 🤔",
+        "Feeding the server hamsters... 🐹",
+        "Untangling the interwebs... 🕸️",
+        "Polishing the PDFs... ✨",
+        "Summoning the document wizard... 🧙‍♂️",
+        "Asking the files nicely to open... 🥺"
+    ];
+    setMessage(funnyMessages[Math.floor(Math.random() * funnyMessages.length)]);
+
+    const timer = setTimeout(() => setShowIntro(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-page selection:bg-txt-primary/20">
       
+      <AnimatePresence mode="wait">
+        {showIntro && (
+            <motion.div
+                key="intro"
+                className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-page text-txt-primary overflow-hidden"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            >
+                 <motion.div 
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex flex-col items-center space-y-8 px-4"
+                 >
+                    {/* Bouncing Plane Animation */}
+                    <div className="relative">
+                        <motion.div
+                            animate={{ 
+                                y: [-15, 15, -15],
+                                rotate: [0, 5, -5, 0],
+                            }}
+                            transition={{ 
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="100" 
+                                height="100" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="1.5" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                                className="text-txt-primary drop-shadow-2xl md:w-[120px] md:h-[120px]"
+                            >
+                                <path d="m22 2-7 20-4-9-9-4Z" />
+                                <path d="M22 2 11 13" />
+                            </svg>
+                        </motion.div>
+                        
+                        {/* Sparkles / Confetti - Themed colors if possible, or keep emoji for fun */}
+                        <motion.div 
+                            className="absolute -top-8 -right-8 text-3xl md:text-4xl"
+                            animate={{ scale: [1, 1.5, 1], rotate: [0, 90, 0] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                        >
+                            ✨
+                        </motion.div>
+                        <motion.div 
+                            className="absolute -bottom-4 -left-8 text-3xl md:text-4xl"
+                            animate={{ scale: [1, 1.2, 1], rotate: [0, -45, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                        >
+                            🎉
+                        </motion.div>
+                    </div>
+
+                    <motion.h2 
+                        className="text-xl md:text-3xl font-bold text-center max-w-lg leading-relaxed font-sans text-txt-secondary"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        {message}
+                    </motion.h2>
+                 </motion.div>
+
+                 {/* Clouds / Decoration - Subtle background elements matching theme */}
+                 <div className="absolute inset-0 pointer-events-none">
+                     <motion.div 
+                        className="absolute top-20 left-[-10%] w-48 h-48 bg-element/30 rounded-full blur-[80px]"
+                        animate={{ x: [0, 50, 0] }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                     />
+                     <motion.div 
+                        className="absolute bottom-40 right-[-10%] w-64 h-64 bg-element/30 rounded-full blur-[80px]"
+                        animate={{ x: [0, -50, 0] }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                     />
+                 </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
          <div className="absolute top-[-10%] left-[20%] w-[60vw] h-[60vw] bg-element/20 rounded-full blur-[120px] animate-pulse-slow" />
       </div>
 
+      {!showIntro && (
       <motion.div 
         className="w-full max-w-5xl flex flex-col items-center z-10 pt-20"
         variants={staggerContainer}
@@ -74,7 +181,7 @@ export default function LandingPage() {
           {/* Tools Grid */}
           <motion.div 
             variants={fadeInUp}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl"
           >
             {/* Tool 1: Unlocker */}
             <Link href="/unlock" className="group">
@@ -85,20 +192,20 @@ export default function LandingPage() {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     whileHover={{ scale: 1.02, y: -10 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
-                                <ShieldCheck className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <ShieldCheck className="w-8 h-8 text-txt-primary stroke-[1.5]" />
                             </div>
-                            <h2 className="text-3xl font-bold text-txt-primary mb-3">Unlock PDF</h2>
-                            <p className="text-txt-secondary text-lg leading-relaxed">Remove password protection securely. No uploads.</p>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Unlock PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Remove password protection securely. No uploads.</p>
                          </div>
                     
-                         <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
+                         <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                          </div>
                     </div>
                 </motion.div>
@@ -112,20 +219,21 @@ export default function LandingPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
-                                <FileDown className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <FileDown className="w-8 h-8 text-txt-primary stroke-[1.5]" />
                             </div>
-                            <h2 className="text-3xl font-bold text-txt-primary mb-3">Compress PDF</h2>
-                            <p className="text-txt-secondary text-lg leading-relaxed">Reduce file size locally. <br/>Efficient and fast.</p>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Compress PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Reduce file size locally. <br/>Efficient and fast.</p>
                          </div>
 
-                         <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
+                         <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                          </div>
                     </div>
                 </motion.div>
@@ -139,24 +247,138 @@ export default function LandingPage() {
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                     whileTap={{ scale: 0.98 }}
-                    className="min-h-[380px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 md:p-10 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
                 >
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
-                            <div className="w-20 h-20 bg-element border border-border-strong rounded-3xl flex items-center justify-center mb-8 shadow-sm">
-                                <ImageIcon className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <ImageIcon className="w-8 h-8 text-txt-primary stroke-[1.5]" />
                             </div>
-                            <h2 className="text-3xl font-bold text-txt-primary mb-3">Compress Image</h2>
-                            <p className="text-txt-secondary text-lg leading-relaxed">Optimize photos to target size. <br/>JPG, PNG, WebP.</p>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Compress Image</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Optimize photos to target size. <br/>JPG, PNG, WebP.</p>
                         </div>
                         
-                        <div className="flex items-center text-txt-primary font-semibold text-base mt-4">
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
                             <span>Open Tool</span>
-                            <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                         </div>
                     </div>
                 </motion.div>
             </Link>
+
+             {/* Tool 4: Merge PDF */}
+             <Link href="/merge-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Layers className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Merge PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Combine multiple PDFs into one document.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 5: Split PDF */}
+             <Link href="/split-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Scissors className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Split PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Extract ranges or pages from a PDF.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 6: Image to PDF */}
+             <Link href="/image-to-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Images className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Image to PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Convert photos to PDF. <br/>With quality control.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 7: Rotate PDF */}
+             <Link href="/rotate-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <RotateCw className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Rotate PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Fix page orientation. <br/>All pages at once.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
           </motion.div>
 
           {/* Footer / Credits */}
@@ -167,11 +389,11 @@ export default function LandingPage() {
                 href="https://ayushgupta3.vercel.app" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group flex items-center space-x-2 px-5 py-2.5 rounded-full bg-element hover:bg-txt-primary border border-border-main transition-all duration-300 shadow-sm hover:shadow-md"
+                className="group flex items-center space-x-2 px-5 py-2.5 rounded-full bg-card hover:bg-txt-primary border border-border-main transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105"
              >
-                <span className="text-sm font-medium text-txt-secondary group-hover:text-bg-page">Developer</span>
-                <div className="w-1 h-1 rounded-full bg-txt-tertiary group-hover:bg-bg-page/50" />
-                <span className="text-sm font-bold text-txt-primary group-hover:text-bg-page">Ayush Gupta</span>
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse group-hover:bg-bg-page" />
+                <span className="text-sm font-medium text-txt-secondary group-hover:text-bg-page transition-colors">Developer</span>
+                <span className="text-sm font-bold text-txt-primary group-hover:text-bg-page transition-colors">Ayush Gupta</span>
              </a>
 
              <div className="flex items-center justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
@@ -185,6 +407,7 @@ export default function LandingPage() {
           </motion.footer>
 
       </motion.div>
+      )}
     </main>
   );
 }

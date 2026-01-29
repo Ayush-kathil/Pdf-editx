@@ -7,45 +7,38 @@ import { Upload, FileLock2, ShieldCheck, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 interface FileUploadProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File | File[]) => void;
   accept?: Record<string, string[]>;
   label?: string;
   subLabel?: string;
+  multiple?: boolean;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({ 
     onFileSelect, 
     accept = { 'application/pdf': ['.pdf'] },
     label = "Upload your PDF",
-    subLabel = "Files up to 10MB. Processed entirely on your device."
+    subLabel = "Files up to 10MB. Processed entirely on your device.",
+    multiple = false
 }) => {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
     if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      // Basic type validation based on accept keys
-      const acceptedTypes = Object.keys(accept);
-      const isValidType = acceptedTypes.some(type => {
-         if (type.endsWith('/*')) {
-             const baseType = type.split('/')[0];
-             return file.type.startsWith(baseType + '/');
-         }
-         return file.type === type || acceptedTypes.includes(file.type); // Simple check
-      });
-      
-      // Let dropzone handle most validation, but we can do a sanity check if needed.
-      // Actually React-Dropzone handles rejection, so if we are here, it matches 'accept' usually.
-      
-      onFileSelect(file);
+      if (multiple) {
+          onFileSelect(acceptedFiles);
+      } else {
+        const file = acceptedFiles[0];
+        onFileSelect(file);
+      }
     }
-  }, [onFileSelect, accept]);
+  }, [onFileSelect, accept, multiple]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
     accept,
-    multiple: false,
+    multiple,
     onDropRejected: () => setError("Invalid file type. Please upload a supported file.")
   });
 

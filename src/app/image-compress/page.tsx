@@ -36,7 +36,8 @@ export default function ImageCompressPage() {
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handleFileSelect = (selectedFile: File) => {
+  const handleFileSelect = (selectedFile: File | File[]) => {
+    if (Array.isArray(selectedFile)) return;
     // Basic validation for image type
     if (!selectedFile.type.startsWith('image/')) {
         setError("Please upload a valid image file (JPG, PNG, WebP).");
