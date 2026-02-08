@@ -29,6 +29,7 @@ export default function HeicToJpgPage() {
   const [step, setStep] = useState<'UPLOAD' | 'SUCCESS'>('UPLOAD');
   const [files, setFiles] = useState<File[]>([]);
   const [convertedFiles, setConvertedFiles] = useState<{name: string, blob: Blob}[]>([]);
+  const [failedFiles, setFailedFiles] = useState<{name: string, reason: string}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +86,10 @@ export default function HeicToJpgPage() {
     setError(null);
     setProgress(0);
     setConvertedFiles([]);
+    setFailedFiles([]);
 
     const results: {name: string, blob: Blob}[] = [];
+    const failures: {name: string, reason: string}[] = [];
 
     try {
         // Dynamic import to fix "window is not defined" SSR error
@@ -95,6 +98,9 @@ export default function HeicToJpgPage() {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             try {
+                // Add a small delay to allow UI updates and GC
+                await new Promise(resolve => setTimeout(resolve, 50));
+
                 // heic2any returns Blob | Blob[]
                 const resultBlob = await heic2any({
                     blob: file,
@@ -105,19 +111,56 @@ export default function HeicToJpgPage() {
                 const blob = Array.isArray(resultBlob) ? resultBlob[0] : resultBlob;
                 const newName = file.name.replace(/\.heic$/i, '.jpg');
                 results.push({ name: newName, blob });
-            } catch (e) {
-                console.error(`Failed to convert ${file.name}`, e);
+            } catch (e: any) {
+                console.warn(`Client-side conversion failed for ${file.name}, trying server fallback...`, e);
+
+                try {
+                    // Fallback to server-side conversion
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch('/api/convert-heic', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.details || 'Server conversion failed');
+                    }
+
+                    const blob = await response.blob();
+                    const newName = file.name.replace(/\.heic$/i, '.jpg');
+                    results.push({ name: newName, blob });
+
+                } catch (serverError: any) {
+                    console.error(`Server conversion also failed for ${file.name}`, serverError);
+                    
+                    let reason = "Conversion failed";
+                    // ... (keep existing error extraction logic if needed, or simplify)
+                    if (serverError instanceof Error) {
+                        reason = serverError.message;
+                    } else if (typeof serverError === 'string') {
+                        reason = serverError;
+                    }
+
+                    failures.push({ 
+                        name: file.name, 
+                        reason: `Client & Server: ${reason}`
+                    });
+                }
             }
             
             // Update progress
             setProgress(Math.round(((i + 1) / files.length) * 100));
         }
 
-        if (results.length === 0) {
-            throw new Error("Failed to convert files.");
+        if (results.length === 0 && failures.length > 0) {
+            throw new Error(`Failed to convert all files. ${failures[0].reason}`);
         }
         
         setConvertedFiles(results);
+        setFailedFiles(failures);
         setStep('SUCCESS');
     } catch (err: any) {
         setError(err.message || 'Failed to convert images.');
@@ -162,6 +205,7 @@ export default function HeicToJpgPage() {
   const handleReset = () => {
     setFiles([]);
     setConvertedFiles([]);
+    setFailedFiles([]);
     setStep('UPLOAD');
     setError(null);
     setProgress(0);
@@ -311,9 +355,32 @@ export default function HeicToJpgPage() {
                   </div>
                   
                   <div className="space-y-3 relative z-10 mb-10">
-                    <h2 className="text-4xl font-bold text-txt-primary tracking-tighter">Converted.</h2>
-                    <p className="text-txt-secondary text-lg">Your images are ready.</p>
+                    <h2 className="text-4xl font-bold text-txt-primary tracking-tighter">
+                        {convertedFiles.length > 0 ? 'Converted!' : 'Failed'}
+                    </h2>
+                    <p className="text-txt-secondary text-lg">
+                        Successfully converted {convertedFiles.length} images.
+                        {failedFiles.length > 0 && (
+                            <span className="text-red-400 block mt-1">
+                                {failedFiles.length} images failed.
+                            </span>
+                        )}
+                    </p>
                   </div>
+                  
+                  {failedFiles.length > 0 && (
+                      <div className="w-full max-w-md bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-8 text-left max-h-40 overflow-y-auto">
+                          <p className="text-red-400 font-medium text-sm mb-2">Failed Files:</p>
+                          <ul className="space-y-1">
+                              {failedFiles.map((f, i) => (
+                                  <li key={i} className="text-xs text-red-300 flex justify-between">
+                                      <span className="truncate flex-1 pr-2">{f.name}</span>
+                                      <span className="opacity-70">{f.reason}</span>
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
+                  )}
 
                   <div className="w-full space-y-4 relative z-10">
                     <motion.button
