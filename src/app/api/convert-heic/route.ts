@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Create a new response with the image data
-    return new NextResponse(outputBuffer, {
+    return new NextResponse(new Blob([outputBuffer as any]), {
+
       status: 200,
       headers: {
         'Content-Type': 'image/jpeg',
