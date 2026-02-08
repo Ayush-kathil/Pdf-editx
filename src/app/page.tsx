@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw } from 'lucide-react';
+import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw, Camera } from 'lucide-react';
 
 const springTransition = {
   type: "spring" as const,
@@ -369,6 +369,34 @@ export default function LandingPage() {
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Rotate PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Fix page orientation. <br/>All pages at once.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 8: HEIC to JPG */}
+             <Link href="/heic-to-jpg" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Camera className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">HEIC to JPG</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Convert HEIC photos. <br/>Bulk conversion supported.</p>
                         </div>
                         
                         <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
