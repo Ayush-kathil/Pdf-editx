@@ -125,8 +125,16 @@ export default function HeicToJpgPage() {
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.details || 'Server conversion failed');
+                        let errorDetails = response.statusText;
+                        try {
+                            const errorData = await response.json();
+                            errorDetails = errorData.details || errorData.error || response.statusText;
+                        } catch (jsonError) {
+                            // If JSON parse fails, try to read text (often "Request Entity Too Large")
+                            const text = await response.text();
+                            if (text) errorDetails = `Server Error (${response.status}): ${text.slice(0, 100)}`;
+                        }
+                        throw new Error(errorDetails);
                     }
 
                     const blob = await response.blob();
