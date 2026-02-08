@@ -45,6 +45,10 @@ const nextConfig: NextConfig = {
             key: 'Cross-Origin-Embedder-Policy',
             value: 'require-corp',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https: blob: data:;",
+          },
         ],
       },
     ];

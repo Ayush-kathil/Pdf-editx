@@ -59,14 +59,11 @@ export default function VideoConverter() {
         }
 
         // 2. Load locally hosted core
-        // We use toBlobURL to ensure correct MIME types are respected and avoid path resolution issues
-        const coreBlob = await toBlobURL(jsPath, 'text/javascript');
-        const wasmBlob = await toBlobURL(wasmPath, 'application/wasm');
-
+        // We pass direct URL strings. FFmpeg 0.12 can handle this for local/same-origin files.
+        // This avoids "expression too dynamic" errors from bundlers trying to analyze fetch/import inside toBlobURL
         await ffmpeg.load({
-            coreURL: coreBlob,
-            wasmURL: wasmBlob,
-            // workerURL: coreBlob, // Single threaded usually re-uses the main script or doesn't need explicit worker
+            coreURL: jsPath,
+            wasmURL: wasmPath,
         });
         
         setIsLoaded(true);
