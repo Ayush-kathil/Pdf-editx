@@ -6,7 +6,7 @@ import { Image as ImageIcon, Download, RefreshCw, X, ArrowUp, ArrowDown, Camera,
 import { FileUpload } from '@/components/ui/FileUpload';
 import clsx from 'clsx';
 import Link from 'next/link';
-import heic2any from 'heic2any';
+// import heic2any from 'heic2any'; // Removed for SSR compatibility
 import JSZip from 'jszip';
 
 const springTransition = {
@@ -33,9 +33,15 @@ export default function HeicToJpgPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  /* Removed top-level import to fix SSR error */
+  // import heic2any from 'heic2any'; 
+
   const handleFileSelect = async (selectedFile: File | File[]) => {
     const newFiles = Array.isArray(selectedFile) ? selectedFile : [selectedFile];
-    
+    processFiles(newFiles);
+  };
+
+  const processFiles = (newFiles: File[]) => {
     // Filter HEIC files
     const validFiles = newFiles.filter(f => 
         f.name.toLowerCase().endsWith('.heic') || 
@@ -44,17 +50,25 @@ export default function HeicToJpgPage() {
     );
 
     if (validFiles.length === 0) {
-        setError('Please select valid HEIC files.');
+        if (newFiles.length > 0) {
+             setError('No valid HEIC files found in selection.');
+        }
         return;
     }
     
     if (validFiles.length !== newFiles.length) {
-         setError('Some files were ignored because they were not HEIC images.');
-    } else {
-         setError(null);
+         // Optional: warning about skipped files, but for folder select it might be annoying
     }
 
     setFiles(prev => [...prev, ...validFiles]);
+    setError(null);
+  };
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+          const fileList = Array.from(e.target.files);
+          processFiles(fileList);
+      }
   };
 
   const removeFile = (index: number) => {
@@ -75,6 +89,9 @@ export default function HeicToJpgPage() {
     const results: {name: string, blob: Blob}[] = [];
 
     try {
+        // Dynamic import to fix "window is not defined" SSR error
+        const heic2any = (await import('heic2any')).default;
+
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             try {
@@ -208,9 +225,23 @@ export default function HeicToJpgPage() {
                       onFileSelect={handleFileSelect} 
                       accept={{ 'image/heic': ['.heic'], 'image/heif': ['.heif'] }} 
                       label="Upload HEIC images"
-                      subLabel="Select multiple HEIC files to convert."
+                      subLabel="Select multiple HEIC files or use the button below for folders."
                       multiple={true}
                   />
+
+                  <div className="flex justify-center">
+                    <label className="cursor-pointer px-6 py-3 rounded-xl bg-element border border-border-main hover:border-txt-primary hover:bg-element-hover text-txt-secondary hover:text-txt-primary transition-all font-medium flex items-center space-x-2">
+                        <ImageIcon className="w-5 h-5" />
+                        <span>Select Folder (Album)</span>
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            {...({ webkitdirectory: "", directory: "" } as any)}
+                            onChange={handleFolderSelect}
+                            multiple
+                        />
+                    </label>
+                  </div>
 
                   {/* File List */}
                   {files.length > 0 && (
