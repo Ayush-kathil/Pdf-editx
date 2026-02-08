@@ -58,19 +58,22 @@ export default function VideoConverter() {
         });
         setIsLoaded(true);
     } catch (e: any) {
-        console.error("FFmpeg load failed", e);
-        // Fallback to single-threaded if multi-thread fails (e.g. headers missing)
+        console.warn("Multi-threaded FFmpeg load failed, attempting single-threaded fallback...", e);
+        
         try {
-            console.log("Attempting fallback to single-threaded core...");
+            // Fallback to single-threaded core (does not require SharedArrayBuffer)
+            // Note: Single-threaded version is in @ffmpeg/core, NOT @ffmpeg/core-mt
             const fallbackBaseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
             await ffmpeg.load({
                 coreURL: await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.js`, 'text/javascript'),
                 wasmURL: await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                // Single-threaded does not use a separate worker file in the same way, or it's embedded/handled differently
             });
             setIsLoaded(true);
             setError(null);
         } catch (fallbackError) {
-             setError("Failed to load video engine. Please ensure your browser supports SharedArrayBuffer.");
+             console.error("Single-threaded fallback failed", fallbackError);
+             setError("Failed to load video engine. Please try using a desktop browser (Chrome/Edge) or reload.");
         }
     }
   };
