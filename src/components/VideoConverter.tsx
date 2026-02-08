@@ -5,8 +5,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileVideo, Download, RefreshCw, X, Upload, Loader2, Film } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import Link from 'next/link';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import Script from 'next/script';
+
+// Helper to fetch file as Uint8Array (replaces @ffmpeg/util)
+const fetchFile = async (file: File): Promise<Uint8Array> => {
+    return new Uint8Array(await file.arrayBuffer());
+};
+
+declare global {
+    interface Window {
+        FFmpegWASM: {
+            FFmpeg: any;
+        };
+    }
+}
 
 const springTransition = {
   type: "spring" as const,
@@ -33,37 +45,55 @@ export default function VideoConverter() {
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const ffmpegRef = useRef<FFmpeg>(new FFmpeg());
+  const ffmpegRef = useRef<any>(null);
   const messageRef = useRef<HTMLParagraphElement | null>(null);
 
-  useEffect(() => {
-    load();
-  }, []);
+  // Removed useEffect, using Script onLoad instead
 
   const load = async () => {
+    if (!window.FFmpegWASM) {
+        console.error("FFmpegWASM global not found on window");
+        setError("Failed to initialize video engine (Library missing).");
+        return;
+    }
+
     try {
+        if (!ffmpegRef.current) {
+            ffmpegRef.current = new window.FFmpegWASM.FFmpeg();
+        }
         const ffmpeg = ffmpegRef.current;
-        ffmpeg.on('log', ({ message }) => {
+        
+        ffmpeg.on('log', ({ message }: { message: string }) => {
             if (messageRef.current) messageRef.current.innerHTML = message;
         });
 
-        // 1. Verify files exist before loading
         const jsPath = '/ffmpeg/ffmpeg-core.js';
         const wasmPath = '/ffmpeg/ffmpeg-core.wasm';
         
-        try {
-            const resp = await fetch(jsPath, { method: 'HEAD' });
-            if (!resp.ok) throw new Error(`Global executable not found at ${jsPath} (${resp.status})`);
-        } catch (netErr) {
-             throw new Error(`Failed to access FFmpeg local files: ${(netErr as Error).message}`);
-        }
+        console.log("Downloading FFmpeg core files...");
+        
+        // Manual Fetch & Blob Creation to bypass Webpack/Next.js dynamic import restrictions
+        const [jsResp, wasmResp] = await Promise.all([
+            fetch(jsPath),
+            fetch(wasmPath)
+        ]);
 
-        // 2. Load locally hosted core
-        // We pass direct URL strings. FFmpeg 0.12 can handle this for local/same-origin files.
-        // This avoids "expression too dynamic" errors from bundlers trying to analyze fetch/import inside toBlobURL
+        if (!jsResp.ok) throw new Error(`JS file not found: ${jsResp.statusText}`);
+        if (!wasmResp.ok) throw new Error(`WASM file not found: ${wasmResp.statusText}`);
+
+        const jsBlob = await jsResp.blob();
+        const wasmBlob = await wasmResp.blob();
+
+        const coreURL = URL.createObjectURL(new Blob([jsBlob], { type: 'text/javascript' }));
+        const wasmURL = URL.createObjectURL(new Blob([wasmBlob], { type: 'application/wasm' }));
+        const workerURL = URL.createObjectURL(new Blob([jsBlob], { type: 'text/javascript' }));
+
+        console.log("Loading FFmpeg engine...");
+        
         await ffmpeg.load({
-            coreURL: jsPath,
-            wasmURL: wasmPath,
+            coreURL: coreURL,
+            wasmURL: wasmURL,
+            workerURL: workerURL, 
         });
         
         setIsLoaded(true);
@@ -362,6 +392,15 @@ export default function VideoConverter() {
           </div>
           
       </motion.div>
+      <Script 
+        src="/ffmpeg/ffmpeg.js" 
+        strategy="afterInteractive" 
+        onLoad={() => {
+            console.log("FFmpeg script loaded");
+            load();
+        }}
+        onError={() => setError("Failed to load FFmpeg script library")}
+      />
     </main>
   );
 }
