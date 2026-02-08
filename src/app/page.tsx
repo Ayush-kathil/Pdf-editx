@@ -407,6 +407,34 @@ export default function LandingPage() {
                 </motion.div>
             </Link>
 
+             {/* Tool 9: MOV to MP4 */}
+             <Link href="/mov-to-mp4" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <span className="text-2xl">🎬</span>
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">MOV to MP4</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Convert video files. <br/>Drag & Drop.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
           </motion.div>
 
           {/* Footer / Credits */}
