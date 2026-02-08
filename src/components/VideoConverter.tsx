@@ -47,13 +47,26 @@ export default function VideoConverter() {
             if (messageRef.current) messageRef.current.innerHTML = message;
         });
 
-        // Load locally hosted single-threaded FFmpeg core
-        // This avoids CDN issues and SharedArrayBuffer requirements
-        const baseURL = `${window.location.origin}/ffmpeg`;
+        // 1. Verify files exist before loading
+        const jsPath = '/ffmpeg/ffmpeg-core.js';
+        const wasmPath = '/ffmpeg/ffmpeg-core.wasm';
         
+        try {
+            const resp = await fetch(jsPath, { method: 'HEAD' });
+            if (!resp.ok) throw new Error(`Global executable not found at ${jsPath} (${resp.status})`);
+        } catch (netErr) {
+             throw new Error(`Failed to access FFmpeg local files: ${(netErr as Error).message}`);
+        }
+
+        // 2. Load locally hosted core
+        // We use toBlobURL to ensure correct MIME types are respected and avoid path resolution issues
+        const coreBlob = await toBlobURL(jsPath, 'text/javascript');
+        const wasmBlob = await toBlobURL(wasmPath, 'application/wasm');
+
         await ffmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+            coreURL: coreBlob,
+            wasmURL: wasmBlob,
+            // workerURL: coreBlob, // Single threaded usually re-uses the main script or doesn't need explicit worker
         });
         
         setIsLoaded(true);
@@ -62,7 +75,8 @@ export default function VideoConverter() {
 
     } catch (e: any) {
         console.error("FFmpeg local load failed", e);
-        setError(`Failed to load video engine: ${e.message}. Please reload.`);
+        const msg = e instanceof Error ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
+        setError(`Failed to load video engine: ${msg}. Check console for details.`);
     }
   };
 
