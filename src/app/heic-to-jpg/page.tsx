@@ -115,26 +115,31 @@ export default function HeicToJpgPage() {
                 console.warn(`Client-side conversion failed for ${file.name}, trying server fallback...`, e);
 
                 try {
-                    // Fallback to server-side conversion
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    const response = await fetch('/api/convert-heic', {
+                    // Fallback to server-side conversion (using Pages API to bypass limits)
+                    // Send raw file body to avoid multipart overhead
+                    const response = await fetch('/api/convert-heic-limit', {
                         method: 'POST',
-                        body: formData,
+                        body: file,
+                        headers: {
+                            'Content-Type': 'application/octet-stream',
+                        }
                     });
 
                     if (!response.ok) {
+                        // Read error text safely
                         let errorDetails = response.statusText;
                         try {
-                            const errorData = await response.json();
-                            errorDetails = errorData.details || errorData.error || response.statusText;
-                        } catch (jsonError) {
-                            // If JSON parse fails, try to read text (often "Request Entity Too Large")
-                            const text = await response.text();
-                            if (text) errorDetails = `Server Error (${response.status}): ${text.slice(0, 100)}`;
-                        }
-                        throw new Error(errorDetails);
+                            const errorText = await response.text();
+                            if (errorText) errorDetails = errorText.substring(0, 200);
+                            
+                            // Try parsing as JSON if possible
+                            try {
+                                const json = JSON.parse(errorText);
+                                if (json.error) errorDetails = json.error;
+                            } catch {}
+                        } catch {}
+                        
+                        throw new Error(`Server Error (${response.status}): ${errorDetails}`);
                     }
 
                     const blob = await response.blob();
@@ -145,7 +150,6 @@ export default function HeicToJpgPage() {
                     console.error(`Server conversion also failed for ${file.name}`, serverError);
                     
                     let reason = "Conversion failed";
-                    // ... (keep existing error extraction logic if needed, or simplify)
                     if (serverError instanceof Error) {
                         reason = serverError.message;
                     } else if (typeof serverError === 'string') {
