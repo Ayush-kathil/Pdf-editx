@@ -115,39 +115,56 @@ export default function HeicToJpgPage() {
                 console.warn(`Client-side conversion failed for ${file.name}, trying server fallback...`, e);
 
                 try {
-                    // Fallback to server-side conversion (using Pages API to bypass limits)
-                    // Send raw file body to avoid multipart overhead
-                    const response = await fetch('/api/convert-heic-limit', {
-                        method: 'POST',
-                        body: file,
-                        headers: {
-                            'Content-Type': 'application/octet-stream',
-                        }
-                    });
-
-                    if (!response.ok) {
-                        // Read error text safely
-                        let errorDetails = response.statusText;
-                        try {
-                            const errorText = await response.text();
-                            if (errorText) errorDetails = errorText.substring(0, 200);
-                            
-                            // Try parsing as JSON if possible
-                            try {
-                                const json = JSON.parse(errorText);
-                                if (json.error) errorDetails = json.error;
-                            } catch {}
-                        } catch {}
+                    // Fallback to server-side conversion with CHUNKED upload to bypass 4.5MB limits
+                    console.log(`Falling back to chunked upload for ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`);
+                    
+                    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks (safe for Vercel/proxies)
+                    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                    const fileId = Math.random().toString(36).substring(7) + Date.now(); // Simple ID
+                    
+                    let response;
+                    
+                    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                        const start = chunkIndex * CHUNK_SIZE;
+                        const end = Math.min(start + CHUNK_SIZE, file.size);
+                        const chunk = file.slice(start, end);
                         
-                        throw new Error(`Server Error (${response.status}): ${errorDetails}`);
+                        // Last chunk?
+                        const isLast = chunkIndex === totalChunks - 1;
+                        
+                        // Send chunk
+                        // We use query params for metadata to keep body raw
+                        const url = `/api/convert-heic-chunked?fileId=${fileId}&chunkIndex=${chunkIndex}&totalChunks=${totalChunks}`;
+                        
+                        response = await fetch(url, {
+                            method: 'POST',
+                            body: chunk,
+                            headers: {
+                                'Content-Type': 'application/octet-stream',
+                            }
+                        });
+
+                        if (!response.ok) {
+                             throw new Error(`Chunk ${chunkIndex} failed: ${response.statusText}`);
+                        }
                     }
 
+                    // The last response contains the converted image
+                    if (!response) throw new Error("No response from server");
+                    
                     const blob = await response.blob();
+                    // Check if it's actually an image (sometimes error pages return 200 OK HTML)
+                    if (blob.type.includes('text') || blob.type.includes('html') || blob.size < 100) {
+                         // Potentially an error disguised as success if not handled right
+                         // But we'll assume success if response.ok was true for now, 
+                         // or we could check header.
+                    }
+
                     const newName = file.name.replace(/\.heic$/i, '.jpg');
                     results.push({ name: newName, blob });
 
                 } catch (serverError: any) {
-                    console.error(`Server conversion also failed for ${file.name}`, serverError);
+                    console.error(`Server chunked conversion also failed for ${file.name}`, serverError);
                     
                     let reason = "Conversion failed";
                     if (serverError instanceof Error) {

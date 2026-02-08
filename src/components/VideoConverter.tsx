@@ -41,39 +41,50 @@ export default function VideoConverter() {
   }, []);
 
   const load = async () => {
-    // Use multi-threaded core for faster performance
-    const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd';
-    const ffmpeg = ffmpegRef.current;
-    
-    ffmpeg.on('log', ({ message }) => {
-      // console.log(message);
-      if (messageRef.current) messageRef.current.innerHTML = message;
-    });
-
+    // 1. Try Multi-Threaded Core (Fastest, requires SharedArrayBuffer)
     try {
+        const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd';
+        const ffmpeg = ffmpegRef.current;
+        
+        ffmpeg.on('log', ({ message }) => {
+            if (messageRef.current) messageRef.current.innerHTML = message;
+        });
+
         await ffmpeg.load({
             coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
             workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
         });
         setIsLoaded(true);
-    } catch (e: any) {
-        console.warn("Multi-threaded FFmpeg load failed, attempting single-threaded fallback...", e);
+        console.log("Loaded Multi-Threaded FFmpeg");
+
+    } catch (mtError: any) {
+        console.warn("Multi-threaded load failed (likely no SharedArrayBuffer). Switching to Single-Threaded...", mtError);
         
+        // 2. Fallback to Single-Threaded Core (Compatible, slower)
         try {
-            // Fallback to single-threaded core (does not require SharedArrayBuffer)
-            // Note: Single-threaded version is in @ffmpeg/core, NOT @ffmpeg/core-mt
+            // Re-instantiate to avoid state corruption
+            ffmpegRef.current = new FFmpeg(); 
+            const ffmpeg = ffmpegRef.current;
+            
+            ffmpeg.on('log', ({ message }) => {
+                if (messageRef.current) messageRef.current.innerHTML = message;
+            });
+
+            // Using 0.12.6 Single Threaded
             const fallbackBaseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
             await ffmpeg.load({
                 coreURL: await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.js`, 'text/javascript'),
                 wasmURL: await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                // Single-threaded does not use a separate worker file in the same way, or it's embedded/handled differently
+                // No workerURL for single-threaded usually
             });
             setIsLoaded(true);
+            console.log("Loaded Single-Threaded FFmpeg");
             setError(null);
-        } catch (fallbackError) {
-             console.error("Single-threaded fallback failed", fallbackError);
-             setError("Failed to load video engine. Please try using a desktop browser (Chrome/Edge) or reload.");
+
+        } catch (stError: any) {
+             console.error("Single-threaded fallback also failed", stError);
+             setError(`Failed to load video engine. Error: ${stError.message || "Unknown"}`);
         }
     }
   };
