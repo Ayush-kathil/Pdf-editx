@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Download, RefreshCw, X, ArrowUp, ArrowDown, Camera, Loader2 } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import clsx from 'clsx';
-import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
 // import heic2any from 'heic2any'; // Removed for SSR compatibility
 import JSZip from 'jszip';
 
@@ -32,7 +32,7 @@ export default function HeicToJpgPage() {
   const [failedFiles, setFailedFiles] = useState<{name: string, reason: string}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   /* Removed top-level import to fix SSR error */
   // import heic2any from 'heic2any'; 
@@ -52,7 +52,7 @@ export default function HeicToJpgPage() {
 
     if (validFiles.length === 0) {
         if (newFiles.length > 0) {
-             setError('No valid HEIC files found in selection.');
+             toast('No valid HEIC files found in selection.', 'error');
         }
         return;
     }
@@ -62,7 +62,6 @@ export default function HeicToJpgPage() {
     }
 
     setFiles(prev => [...prev, ...validFiles]);
-    setError(null);
   };
 
   const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,12 +77,11 @@ export default function HeicToJpgPage() {
 
   const handleConvert = async () => {
     if (files.length === 0) {
-        setError('Please upload at least 1 HEIC image.');
+        toast('Please upload at least 1 HEIC image.', 'error');
         return;
     }
 
     setIsProcessing(true);
-    setError(null);
     setProgress(0);
     setConvertedFiles([]);
     setFailedFiles([]);
@@ -191,8 +189,12 @@ export default function HeicToJpgPage() {
         setConvertedFiles(results);
         setFailedFiles(failures);
         setStep('SUCCESS');
+        toast(`Converted ${results.length} images.`, 'success');
+        if (failures.length > 0) {
+             toast(`${failures.length} images failed to convert.`, 'error');
+        }
     } catch (err: any) {
-        setError(err.message || 'Failed to convert images.');
+        toast(err.message || 'Failed to convert images.', 'error');
     } finally {
         setIsProcessing(false);
     }
@@ -229,6 +231,7 @@ export default function HeicToJpgPage() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
@@ -236,7 +239,6 @@ export default function HeicToJpgPage() {
     setConvertedFiles([]);
     setFailedFiles([]);
     setStep('UPLOAD');
-    setError(null);
     setProgress(0);
   };
 
@@ -287,13 +289,6 @@ export default function HeicToJpgPage() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                    <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
-
                   <FileUpload 
                       onFileSelect={handleFileSelect} 
                       accept={{ 'image/heic': ['.heic'], 'image/heif': ['.heif'] }} 
@@ -355,16 +350,6 @@ export default function HeicToJpgPage() {
                               />
                           </div>
                       </div>
-                  )}
-
-                  {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
-                    >
-                        {error}
-                    </motion.div>
                   )}
                 </motion.div>
               )}

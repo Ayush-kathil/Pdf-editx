@@ -6,7 +6,7 @@ import { FileDown, Download, RefreshCw, X, ShieldCheck, FileInput } from 'lucide
 import { FileUpload } from '@/components/ui/FileUpload';
 import { compressPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
-import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
 
 const springTransition = {
   type: "spring" as const,
@@ -29,15 +29,14 @@ export default function CompressPage() {
   const [file, setFile] = useState<File | null>(null);
   const [compressedPdf, setCompressedPdf] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [quality, setQuality] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
+  const { toast } = useToast();
 
   // File selection handler
   const handleFileSelect = async (selectedFile: File | File[]) => {
     if (Array.isArray(selectedFile)) return;
     setFile(selectedFile);
     setIsProcessing(true);
-    setError(null);
     
     // Process immediately for compression logic after short delay for UI
     try {
@@ -45,8 +44,9 @@ export default function CompressPage() {
         const compressedBytes = await compressPdf(fileBuffer, quality);
         setCompressedPdf(compressedBytes);
         setStep('SUCCESS');
+        toast('PDF compressed successfully!', 'success');
     } catch (err: any) {
-        setError(err.message || 'Failed to compress PDF.');
+        toast(err.message || 'Failed to compress PDF.', 'error');
         setStep('UPLOAD');
     } finally {
         setIsProcessing(false);
@@ -64,13 +64,13 @@ export default function CompressPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
     setFile(null);
     setCompressedPdf(null);
     setStep('UPLOAD');
-    setError(null);
   };
 
   return (
@@ -120,13 +120,6 @@ export default function CompressPage() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                  <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
-
                   <FileUpload onFileSelect={handleFileSelect} />
                   
                   {/* Simple Quality Selector */}
@@ -152,16 +145,6 @@ export default function CompressPage() {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           <span>Compressing...</span>
                       </div>
-                  )}
-
-                  {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
-                    >
-                        {error}
-                    </motion.div>
                   )}
                 </motion.div>
               )}

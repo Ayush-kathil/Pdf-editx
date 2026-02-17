@@ -6,6 +6,7 @@ import { FileVideo, Download, RefreshCw, X, Upload, Loader2, Film } from 'lucide
 import { FileUpload } from '@/components/ui/FileUpload';
 import Link from 'next/link';
 import Script from 'next/script';
+import { useToast } from '@/components/ui/toast-provider';
 
 // Helper to fetch file as Uint8Array (replaces @ffmpeg/util)
 const fetchFile = async (file: File): Promise<Uint8Array> => {
@@ -43,17 +44,17 @@ export default function VideoConverter() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0); // 0-100 overall
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const ffmpegRef = useRef<any>(null);
   const messageRef = useRef<HTMLParagraphElement | null>(null);
+  const { toast } = useToast();
 
   // Removed useEffect, using Script onLoad instead
 
   const load = async () => {
     if (!window.FFmpegWASM) {
         console.error("FFmpegWASM global not found on window");
-        setError("Failed to initialize video engine (Library missing).");
+        toast("Failed to initialize video engine (Library missing).", 'error');
         return;
     }
 
@@ -98,12 +99,11 @@ export default function VideoConverter() {
         
         setIsLoaded(true);
         console.log("Loaded FFmpeg Locally");
-        setError(null);
 
     } catch (e: any) {
         console.error("FFmpeg local load failed", e);
         const msg = e instanceof Error ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
-        setError(`Failed to load video engine: ${msg}. Check console for details.`);
+        toast(`Failed to load video engine: ${msg}.`, 'error');
     }
   };
 
@@ -117,12 +117,11 @@ export default function VideoConverter() {
     );
 
     if (validFiles.length === 0 && newFiles.length > 0) {
-        setError('Please select valid video files (MOV).');
+        toast('Please select valid video files (MOV).', 'error');
         return;
     }
 
     setFiles(prev => [...prev, ...validFiles]);
-    setError(null);
   };
 
   const removeFile = (index: number) => {
@@ -131,13 +130,12 @@ export default function VideoConverter() {
 
   const handleConvert = async () => {
     if (!isLoaded) {
-        setError("Converter engine is still loading...");
+        toast("Converter engine is still loading...", 'info');
         return;
     }
     if (files.length === 0) return;
 
     setIsProcessing(true);
-    setError(null);
     setProgress(0);
     setCurrentFileIndex(0);
     setConvertedFiles([]);
@@ -175,9 +173,10 @@ export default function VideoConverter() {
 
         setConvertedFiles(results);
         setStep('SUCCESS');
+        toast('Videos converted successfully!', 'success');
     } catch (e: any) {
         console.error(e);
-        setError("Conversion failed. Please try again with different files.");
+        toast("Conversion failed. Please try again with different files.", 'error');
     } finally {
         setIsProcessing(false);
     }
@@ -203,13 +202,13 @@ export default function VideoConverter() {
             document.body.removeChild(a);
         });
     }
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
     setFiles([]);
     setConvertedFiles([]);
     setStep('UPLOAD');
-    setError(null);
     setProgress(0);
   };
 
@@ -259,13 +258,6 @@ export default function VideoConverter() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                    <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
-
                   <FileUpload 
                       onFileSelect={handleFileSelect} 
                       accept={{ 'video/quicktime': ['.mov'], 'video/mp4': ['.mp4'], 'video/*': [] }} 
@@ -288,7 +280,7 @@ export default function VideoConverter() {
                       </div>
                   )}
 
-                  {!isLoaded && !error && (
+                  {!isLoaded && (
                       <div className="text-center text-xs text-txt-tertiary">
                           Loading video engine...
                       </div>
@@ -320,16 +312,6 @@ export default function VideoConverter() {
                           </div>
                           <p ref={messageRef} className="text-[10px] text-txt-quaternary text-center font-mono h-4 overflow-hidden" />
                       </div>
-                  )}
-
-                  {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
-                    >
-                        {error}
-                    </motion.div>
                   )}
                 </motion.div>
               )}
@@ -399,7 +381,7 @@ export default function VideoConverter() {
             console.log("FFmpeg script loaded");
             load();
         }}
-        onError={() => setError("Failed to load FFmpeg script library")}
+        onError={() => toast("Failed to load FFmpeg script library", 'error')}
       />
     </main>
   );

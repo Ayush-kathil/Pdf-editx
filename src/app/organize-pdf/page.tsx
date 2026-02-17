@@ -1,23 +1,42 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, Download, Trash2, ArrowLeft, Move, RotateCw, X } from 'lucide-react';
+import { Download, Trash2, RotateCw, Loader2 } from 'lucide-react';
 import { PDFDocument, degrees } from 'pdf-lib';
+import { FileUpload } from '@/components/ui/FileUpload';
+import { useToast } from '@/components/ui/toast-provider';
+import clsx from 'clsx';
 
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 260,
+  damping: 20,
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    filter: 'blur(0px)',
+    transition: springTransition
+  },
+};
 
 export default function OrganizePDF() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pages, setPages] = useState<{ originalIndex: number; image: string; rotation: number; id: string }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const { toast } = useToast();
 
   // Load PDF and render thumbnails
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileUpload = async (fileOrFiles: File | File[]) => {
+    const file = Array.isArray(fileOrFiles) ? fileOrFiles[0] : fileOrFiles;
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      alert('Please upload a valid PDF file.');
+      toast('Please upload a valid PDF file.', 'error');
       return;
     }
 
@@ -52,9 +71,11 @@ export default function OrganizePDF() {
         }
       }
       setPages(newPages);
+      toast('PDF pages loaded successfully.', 'success');
     } catch (error) {
       console.error('Error loading PDF:', error);
-      alert('Failed to load PDF. Please try another file.');
+      toast('Failed to load PDF. Please try another file.', 'error');
+      setPdfFile(null);
     } finally {
       setIsProcessing(false);
     }
@@ -102,12 +123,10 @@ export default function OrganizePDF() {
 
       for (const pageItem of pages) {
         const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageItem.originalIndex]);
-        copiedPage.setRotation(degrees(pageItem.rotation)); // Add rotation if any (simplified, might need accumulative logic)
-        // Note: original page might have rotation. pdf-lib setRotation sets absolute rotation.
-        // Usually we want to add to existing. But for simplicity here assume base 0 or absolute set.
-        // Better approach: Read existing rotation and add.
-         const existingRotation = copiedPage.getRotation().angle;
-         copiedPage.setRotation(degrees(existingRotation + pageItem.rotation));
+        
+        // Add existing rotation logic if needed, simplify here
+        const existingRotation = copiedPage.getRotation().angle;
+        copiedPage.setRotation(degrees(existingRotation + pageItem.rotation));
         
         newPdf.addPage(copiedPage);
       }
@@ -118,70 +137,91 @@ export default function OrganizePDF() {
       link.href = URL.createObjectURL(blob);
       link.download = `organized-${pdfFile.name}`;
       link.click();
+      toast('PDF saved successfully.', 'success');
     } catch (error) {
       console.error('Error saving PDF:', error);
-      alert('Failed to save PDF.');
+      toast('Failed to save PDF.', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-page text-txt-primary flex flex-col items-center pt-24 px-6 md:px-12 pb-20 transition-all">
-       <a href="/" className="absolute top-6 left-6 p-3 rounded-full bg-element/50 backdrop-blur-md hover:bg-element hover:scale-110 active:scale-95 transition-all z-20 shadow-sm border border-border-color">
-        <ArrowLeft className="w-6 h-6" />
-      </a>
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-page selection:bg-txt-primary/20">
+       
+       {/* Background Elements */}
+       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-element/20 rounded-full blur-[150px] opacity-40 animate-pulse-slow" />
+          <div className="absolute bottom-[-20%] left-[-20%] w-[60vw] h-[60vw] bg-zinc-800/20 rounded-full blur-[150px] opacity-30" />
+       </div>
 
-      <div className="w-full max-w-6xl text-center mb-10">
-        <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-txt-primary to-txt-secondary animate-fade-in-up">
-          Organize PDF
-        </h1>
-        <p className="text-lg text-txt-secondary">Reorder, rotate, or remove pages.</p>
-      </div>
+      <motion.div 
+        className={clsx("w-full z-10 pt-20", pdfFile ? "max-w-6xl" : "max-w-2xl")}
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+      >
+          {/* Header */}
+          {!pdfFile && (
+              <header className="mb-12 text-center space-y-5">
+                <div className="space-y-3">
+                    <h1 className="text-5xl md:text-6xl font-bold text-txt-primary tracking-tighter leading-tight">
+                    Organize PDF.
+                    </h1>
+                    <p className="text-lg md:text-xl text-txt-secondary max-w-lg mx-auto leading-relaxed font-normal">
+                    Reorder, rotate, or remove pages.
+                    </p>
+                </div>
+              </header>
+          )}
 
       {!pdfFile ? (
         <motion.div
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
-           className="w-full max-w-xl"
+           className="w-full relative"
         >
-            <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border-strong rounded-3xl bg-card hover:bg-element/50 hover:border-txt-primary/50 transition-all cursor-pointer group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-accent-glow to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="flex flex-col items-center justify-center pt-5 pb-6 z-10">
-                    <FileUp className="w-16 h-16 text-txt-tertiary group-hover:text-txt-primary group-hover:scale-110 transition-all duration-300 mb-4" />
-                    <p className="mb-2 text-lg text-txt-secondary"><span className="font-semibold text-txt-primary">Click to upload</span> or drag and drop</p>
-                    <p className="text-sm text-txt-tertiary">PDF files only</p>
-                </div>
-                <input type="file" className="hidden" accept=".pdf" onChange={handleFileUpload} />
-            </label>
+            <FileUpload 
+                onFileSelect={handleFileUpload} 
+                accept={{ 'application/pdf': ['.pdf'] }} 
+                label="Upload PDF to Organize"
+                subLabel="Drag & drop or click to select"
+            />
         </motion.div>
       ) : (
-        <div className="w-full max-w-6xl">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h3 className="text-xl font-semibold text-txt-primary truncate max-w-xs">{pdfFile.name}</h3>
+        <div className="w-full">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-card/50 p-6 rounded-3xl border border-border-main backdrop-blur-md">
+                <h3 className="text-xl font-bold text-txt-primary truncate max-w-xs">{pdfFile.name}</h3>
                 <div className="flex space-x-3 w-full md:w-auto">
                      <button 
                         onClick={() => { setPdfFile(null); setPages([]); }}
-                        className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-element hover:bg-element-hover text-txt-primary transition-all active:scale-95 text-sm font-medium border border-border-color"
+                        className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-transparent border border-border-strong text-txt-secondary hover:text-txt-primary hover:border-txt-primary transition-all font-medium"
                      >
                         Cancel
                     </button>
                     <button 
                         onClick={downloadPDF}
                         disabled={isProcessing}
-                        className="flex-1 md:flex-none px-8 py-3 rounded-xl bg-white dark:bg-white text-black hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all text-sm font-bold flex items-center justify-center shadow-lg hover:shadow-white/20"
+                        className="flex-1 md:flex-none px-8 py-3 rounded-xl bg-txt-primary text-page hover:bg-txt-primary/90 transition-all font-bold shadow-lg flex items-center justify-center space-x-2"
                     >
                         {isProcessing ? 'Processing...' : (
                             <>
-                                <Download className="w-4 h-4 mr-2" />
-                                Download PDF
+                                <Download className="w-5 h-5" />
+                                <span>Save PDF</span>
                             </>
                         )}
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 animate-enter delay-100">
+            {isProcessing && pages.length === 0 && (
+                <div className="flex justify-center items-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-txt-primary" />
+                    <span className="ml-2 text-txt-secondary">Loading pages...</span>
+                </div>
+            )}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 animate-enter">
                 <AnimatePresence>
                     {pages.map((page, index) => (
                         <motion.div
@@ -194,7 +234,10 @@ export default function OrganizePDF() {
                             onDragStart={() => handleDragStart(index)}
                             onDragOver={(e) => handleDragOver(e, index)}
                             onDragEnd={handleDragEnd}
-                            className={`relative aspect-[3/4] bg-white rounded-xl shadow-md overflow-hidden group cursor-grab active:cursor-grabbing border-2 ${draggedItemIndex === index ? 'border-blue-500 opacity-50' : 'border-transparent hover:border-txt-tertiary'}`}
+                            className={clsx(
+                                "relative aspect-[3/4] bg-white rounded-xl shadow-lg overflow-hidden group cursor-grab active:cursor-grabbing border-2 transition-all",
+                                draggedItemIndex === index ? 'border-txt-primary opacity-50' : 'border-transparent hover:border-txt-tertiary'
+                            )}
                         >
                             <img 
                                 src={page.image} 
@@ -220,20 +263,21 @@ export default function OrganizePDF() {
                                 </button>
                             </div>
                             
-                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md font-mono">
                                 {index + 1}
                             </div>
                         </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
-             {pages.length === 0 && (
-                <div className="text-center py-20 text-txt-tertiary">
+             {!isProcessing && pages.length === 0 && (
+                <div className="text-center py-20 text-txt-tertiary bg-card/30 rounded-3xl border border-dashed border-border-main">
                     No pages left! Upload a new document?
                 </div>
             )}
         </div>
       )}
-    </div>
+      </motion.div>
+    </main>
   );
 }

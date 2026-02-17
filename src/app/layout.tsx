@@ -18,6 +18,7 @@ export const viewport = {
 
 import { Navbar } from '@/components/ui/Navbar';
 import { ThemeProvider } from '@/components/ui/theme-provider';
+import { ToastProvider } from '@/components/ui/toast-provider';
 
 export default function RootLayout({
   children,
@@ -37,8 +38,10 @@ export default function RootLayout({
       </head>
       <body className={outfit.variable}>
         <ThemeProvider>
+          <ToastProvider>
            <Navbar />
            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

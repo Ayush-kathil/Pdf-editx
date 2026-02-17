@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Download, RefreshCw, X } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { splitPdf } from '@/lib/pdf-utils';
-import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
 
 const springTransition = {
   type: "spring" as const,
@@ -28,28 +28,27 @@ export default function SplitPage() {
   const [file, setFile] = useState<File | null>(null);
   const [splitPdfBytes, setSplitPdfBytes] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState({ start: 1, end: 1 });
+  const { toast } = useToast();
 
   const handleFileSelect = (selectedFile: File | File[]) => {
     if (Array.isArray(selectedFile)) return;
     setFile(selectedFile);
-    setError(null);
   };
 
   const handleSplit = async () => {
     if (!file) return;
 
     setIsProcessing(true);
-    setError(null);
 
     try {
         const buffer = await file.arrayBuffer();
         const result = await splitPdf(buffer, range.start, range.end);
         setSplitPdfBytes(result);
         setStep('SUCCESS');
+        toast('PDF split successfully!', 'success');
     } catch (err: any) {
-        setError(err.message || 'Failed to split PDF.');
+        toast(err.message || 'Failed to split PDF.', 'error');
     } finally {
         setIsProcessing(false);
     }
@@ -66,13 +65,13 @@ export default function SplitPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
     setFile(null);
     setSplitPdfBytes(null);
     setStep('UPLOAD');
-    setError(null);
     setRange({ start: 1, end: 1 });
   };
 
@@ -123,13 +122,6 @@ export default function SplitPage() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                    <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
-
                   <FileUpload onFileSelect={handleFileSelect} />
 
                   {file && (
@@ -177,16 +169,6 @@ export default function SplitPage() {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           <span>Splitting...</span>
                       </div>
-                  )}
-
-                  {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
-                    >
-                        {error}
-                    </motion.div>
                   )}
                 </motion.div>
               )}

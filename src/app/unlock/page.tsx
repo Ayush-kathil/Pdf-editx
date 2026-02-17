@@ -7,6 +7,7 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { DetailsForm } from '@/components/ui/DetailsForm';
 import { PasswordForm } from '@/components/ui/PasswordForm';
 import { unlockPdf, derivePassword } from '@/lib/pdf-utils';
+import { useToast } from '@/components/ui/toast-provider';
 
 const springTransition = {
   type: "spring" as const,
@@ -44,13 +45,12 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [unlockedPdf, setUnlockedPdf] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // specific handlers
   const handleModeSelect = (selectedMode: UnlockMode) => {
     setMode(selectedMode);
     setStep('UPLOAD');
-    setError(null);
   };
 
   // File selection handler
@@ -58,7 +58,6 @@ export default function Home() {
     if (Array.isArray(selectedFile)) return;
     setFile(selectedFile);
     setStep('DETAILS');
-    setError(null);
   };
 
   // Processing handler for Aadhar
@@ -75,7 +74,6 @@ export default function Home() {
 
   const performUnlock = async (getPassword: () => Promise<string> | string) => {
     setIsProcessing(true);
-    setError(null);
     
     try {
       const password = await getPassword();
@@ -84,8 +82,9 @@ export default function Home() {
       
       setUnlockedPdf(unlockedBytes);
       setStep('SUCCESS');
+      toast('Document unlocked successfully.', 'success');
     } catch (err: any) {
-      setError(err.message || 'Failed to unlock PDF. Please check the details/password.');
+      toast(err.message || 'Failed to unlock PDF. Please check the details/password.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -96,7 +95,6 @@ export default function Home() {
     setFile(null);
     setUnlockedPdf(null);
     setStep('MODE_SELECTION');
-    setError(null);
   };
 
   // Download handler
@@ -276,17 +274,6 @@ export default function Home() {
                             <DetailsForm onSubmit={handleAadharUnlock} isProcessing={isProcessing} />
                         ) : (
                             <PasswordForm onSubmit={handleNormalUnlock} isProcessing={isProcessing} />
-                        )}
-                        
-                        {error && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-6 text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl border border-red-500/20 flex items-center gap-3"
-                            >
-                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                {error}
-                            </motion.div>
                         )}
                     </div>
                 </motion.div>

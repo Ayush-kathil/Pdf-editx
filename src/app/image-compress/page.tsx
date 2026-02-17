@@ -6,7 +6,7 @@ import { Image as ImageIcon, Download, RefreshCw, X, ShieldCheck } from 'lucide-
 import { FileUpload } from '@/components/ui/FileUpload';
 import { compressImage } from '@/lib/image-utils';
 import clsx from 'clsx';
-import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
 
 const springTransition = {
   type: "spring" as const,
@@ -32,7 +32,7 @@ export default function ImageCompressPage() {
   const [quality, setQuality] = useState<number>(0.8);
   const [targetSizeKB, setTargetSizeKB] = useState<number>(100);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -40,19 +40,17 @@ export default function ImageCompressPage() {
     if (Array.isArray(selectedFile)) return;
     // Basic validation for image type
     if (!selectedFile.type.startsWith('image/')) {
-        setError("Please upload a valid image file (JPG, PNG, WebP).");
+        toast("Please upload a valid image file (JPG, PNG, WebP).", 'error');
         return;
     }
     setFile(selectedFile);
     setPreviewUrl(URL.createObjectURL(selectedFile));
     setStep('SETTINGS');
-    setError(null);
   };
 
   const handleCompress = async () => {
     if (!file) return;
     setIsProcessing(true);
-    setError(null);
 
     try {
         const options: any = {};
@@ -65,8 +63,9 @@ export default function ImageCompressPage() {
         const blob = await compressImage(file, options);
         setCompressedBlob(blob);
         setStep('SUCCESS');
+        toast('Image compressed successfully!', 'success');
     } catch (err: any) {
-        setError(err.message || 'Compression failed.');
+        toast(err.message || 'Compression failed.', 'error');
     } finally {
         setIsProcessing(false);
     }
@@ -82,6 +81,7 @@ export default function ImageCompressPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
@@ -90,7 +90,6 @@ export default function ImageCompressPage() {
     setCompressedBlob(null);
     setPreviewUrl(null);
     setStep('UPLOAD');
-    setError(null);
   };
 
   // Helper to format bytes
@@ -149,23 +148,12 @@ export default function ImageCompressPage() {
                   transition={springTransition}
                   className="relative"
                 >
-                    <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
                   <FileUpload 
                     onFileSelect={handleFileSelect} 
                     accept={{ 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'], 'image/webp': ['.webp'] }}
                     label="Upload Image"
                     subLabel="JPG, PNG, WebP up to 10MB."
                   />
-                  {error && (
-                    <div className="mt-6 text-red-500 text-sm bg-red-500/10 p-4 rounded-xl text-center border border-red-500/20">
-                        {error}
-                    </div>
-                  )}
                 </motion.div>
               )}
 

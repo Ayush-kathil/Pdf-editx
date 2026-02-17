@@ -6,7 +6,7 @@ import { Images, Download, RefreshCw, X, ArrowUp, ArrowDown } from 'lucide-react
 import { FileUpload } from '@/components/ui/FileUpload';
 import { imagesToPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
-import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
 
 const springTransition = {
   type: "spring" as const,
@@ -29,8 +29,8 @@ export default function ImageToPdfPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [quality, setQuality] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('HIGH');
+  const { toast } = useToast();
 
   const handleFileSelect = async (selectedFile: File | File[]) => {
     const newFiles = Array.isArray(selectedFile) ? selectedFile : [selectedFile];
@@ -39,14 +39,12 @@ export default function ImageToPdfPage() {
     const validFiles = newFiles.filter(f => f.type.startsWith('image/'));
 
     if (validFiles.length === 0) {
-        setError('Please select valid image files (JPG, PNG).');
+        toast('Please select valid image files (JPG, PNG).', 'error');
         return;
     }
     
     if (validFiles.length !== newFiles.length) {
-         setError('Some files were ignored because they were not images.');
-    } else {
-         setError(null);
+         toast('Some files were ignored because they were not images.', 'info');
     }
 
     setFiles(prev => [...prev, ...validFiles]);
@@ -69,12 +67,11 @@ export default function ImageToPdfPage() {
 
   const handleConvert = async () => {
     if (files.length === 0) {
-        setError('Please upload at least 1 image.');
+        toast('Please upload at least 1 image.', 'error');
         return;
     }
 
     setIsProcessing(true);
-    setError(null);
 
     try {
         const buffers = await Promise.all(files.map(f => f.arrayBuffer()));
@@ -90,8 +87,9 @@ export default function ImageToPdfPage() {
         
         setPdfBytes(result);
         setStep('SUCCESS');
+        toast('Images converted to PDF successfully!', 'success');
     } catch (err: any) {
-        setError(err.message || 'Failed to convert images to PDF.');
+        toast(err.message || 'Failed to convert images to PDF.', 'error');
     } finally {
         setIsProcessing(false);
     }
@@ -108,13 +106,13 @@ export default function ImageToPdfPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    toast('Download started.', 'info');
   };
 
   const handleReset = () => {
     setFiles([]);
     setPdfBytes(null);
     setStep('UPLOAD');
-    setError(null);
   };
 
   return (
@@ -164,13 +162,6 @@ export default function ImageToPdfPage() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                    <Link 
-                        href="/"
-                        className="absolute -top-12 left-0 text-xs font-medium text-txt-tertiary hover:text-txt-primary transition-colors flex items-center space-x-1"
-                    >
-                        <span>← Back</span>
-                    </Link>
-
                   <FileUpload 
                       onFileSelect={handleFileSelect} 
                       accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }} 
@@ -238,16 +229,6 @@ export default function ImageToPdfPage() {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           <span>Converting...</span>
                       </div>
-                  )}
-
-                  {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-red-500 text-sm bg-red-500/10 p-4 rounded-2xl text-center border border-red-500/20"
-                    >
-                        {error}
-                    </motion.div>
                   )}
                 </motion.div>
               )}
