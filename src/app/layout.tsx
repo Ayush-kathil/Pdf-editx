@@ -27,6 +27,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* RESOURCE: Paste your Google Search Console verification meta tag below this line */}
+        <meta name="google-site-verification" content="xGevfp3B3CvlIc2uO-GrTSf7vr6XO6V5Y6UL0UPOnIE" />
         <meta 
           httpEquiv="Content-Security-Policy" 
           content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; img-src 'self' blob: data:;" 
