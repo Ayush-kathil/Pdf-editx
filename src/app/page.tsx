@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw, Camera } from 'lucide-react';
+import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw, Camera, Grid, Type } from 'lucide-react';
 
 const springTransition = {
   type: "spring" as const,
@@ -33,121 +33,19 @@ const fadeInUp = {
 };
 
 export default function LandingPage() {
-  const [showIntro, setShowIntro] = React.useState(true);
-  const [message, setMessage] = React.useState("");
 
-  React.useEffect(() => {
-    const funnyMessages = [
-        "Convincing the pixels to cooperate... 🤔",
-        "Feeding the server hamsters... 🐹",
-        "Untangling the interwebs... 🕸️",
-        "Polishing the PDFs... ✨",
-        "Summoning the document wizard... 🧙‍♂️",
-        "Asking the files nicely to open... 🥺"
-    ];
-    setMessage(funnyMessages[Math.floor(Math.random() * funnyMessages.length)]);
-
-    const timer = setTimeout(() => setShowIntro(false), 2500);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-page selection:bg-txt-primary/20">
       
-      <AnimatePresence mode="wait">
-        {showIntro && (
-            <motion.div
-                key="intro"
-                className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-page text-txt-primary overflow-hidden"
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            >
-                 <motion.div 
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="flex flex-col items-center space-y-8 px-4"
-                 >
-                    {/* Bouncing Plane Animation */}
-                    <div className="relative">
-                        <motion.div
-                            animate={{ 
-                                y: [-15, 15, -15],
-                                rotate: [0, 5, -5, 0],
-                            }}
-                            transition={{ 
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
-                        >
-                            <svg 
-                                xmlns="http://www.w3.org/2000/svg" 
-                                width="100" 
-                                height="100" 
-                                viewBox="0 0 24 24" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                strokeWidth="1.5" 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round"
-                                className="text-txt-primary drop-shadow-2xl md:w-[120px] md:h-[120px]"
-                            >
-                                <path d="m22 2-7 20-4-9-9-4Z" />
-                                <path d="M22 2 11 13" />
-                            </svg>
-                        </motion.div>
-                        
-                        {/* Sparkles / Confetti - Themed colors if possible, or keep emoji for fun */}
-                        <motion.div 
-                            className="absolute -top-8 -right-8 text-3xl md:text-4xl"
-                            animate={{ scale: [1, 1.5, 1], rotate: [0, 90, 0] }}
-                            transition={{ duration: 1, repeat: Infinity }}
-                        >
-                            ✨
-                        </motion.div>
-                        <motion.div 
-                            className="absolute -bottom-4 -left-8 text-3xl md:text-4xl"
-                            animate={{ scale: [1, 1.2, 1], rotate: [0, -45, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-                        >
-                            🎉
-                        </motion.div>
-                    </div>
 
-                    <motion.h2 
-                        className="text-xl md:text-3xl font-bold text-center max-w-lg leading-relaxed font-sans text-txt-secondary"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        {message}
-                    </motion.h2>
-                 </motion.div>
-
-                 {/* Clouds / Decoration - Subtle background elements matching theme */}
-                 <div className="absolute inset-0 pointer-events-none">
-                     <motion.div 
-                        className="absolute top-20 left-[-10%] w-48 h-48 bg-element/30 rounded-full blur-[80px]"
-                        animate={{ x: [0, 50, 0] }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                     />
-                     <motion.div 
-                        className="absolute bottom-40 right-[-10%] w-64 h-64 bg-element/30 rounded-full blur-[80px]"
-                        animate={{ x: [0, -50, 0] }}
-                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                     />
-                 </div>
-            </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
          <div className="absolute top-[-10%] left-[20%] w-[60vw] h-[60vw] bg-element/20 rounded-full blur-[120px] animate-pulse-slow" />
       </div>
 
-      {!showIntro && (
+
       <motion.div 
         className="w-full max-w-5xl flex flex-col items-center z-10 pt-20"
         variants={staggerContainer}
@@ -435,6 +333,91 @@ export default function LandingPage() {
                 </motion.div>
             </Link>
 
+
+             {/* Tool 10: Organize PDF */}
+             <Link href="/organize-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Grid className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Organize PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Reorder and delete pages. <br/>Visual editor.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 11: Watermark PDF */}
+             <Link href="/watermark-pdf" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.0 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Type className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Watermark PDF</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Add safety text text. <br/>Customizable styles.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+            {/* Tool 12: PDF to JPG */}
+             <Link href="/pdf-to-jpg" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.1 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <ImageIcon className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">PDF to JPG</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">Convert pages to photos. <br/>High quality output.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
           </motion.div>
 
           {/* Footer / Credits */}
@@ -463,7 +446,7 @@ export default function LandingPage() {
           </motion.footer>
 
       </motion.div>
-      )}
+
     </main>
   );
 }
