@@ -18,9 +18,9 @@ export default function WordToPdfPage() {
   const { toast } = useToast();
   const hiddenContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleFileUpload = (files: File[]) => {
-    if (files.length > 0) {
-      const selectedFile = files[0];
+  const handleFileUpload = (fileData: File | File[]) => {
+    const selectedFile = Array.isArray(fileData) ? fileData[0] : fileData;
+    if (selectedFile) {
       if (
         selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
         selectedFile.name.toLowerCase().endsWith('.docx')
@@ -57,13 +57,14 @@ export default function WordToPdfPage() {
       // 3. Import html2pdf dynamically and generate PDF
       const html2pdf = (await import('html2pdf.js')).default;
       const element = hiddenContainerRef.current;
+      if (!element) throw new Error("Render container missing");
       
       const opt = {
         margin:       0,
         filename:     `converted-${docFile.name.replace('.docx', '.pdf')}`,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' as const }
       };
 
       // Generate the PDF blob
@@ -133,10 +134,9 @@ export default function WordToPdfPage() {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <FileUpload
-                onFilesSelected={handleFileUpload}
-                accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                maxFiles={1}
-                title="Drop your Word document here"
+                onFileSelect={handleFileUpload}
+                accept={{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] }}
+                label="Drop your Word document here"
               />
             </motion.div>
           )}

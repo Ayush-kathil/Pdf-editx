@@ -18,9 +18,9 @@ export default function ExcelToPdfPage() {
   const { toast } = useToast();
   const hiddenContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleFileUpload = (files: File[]) => {
-    if (files.length > 0) {
-      const selectedFile = files[0];
+  const handleFileUpload = (fileData: File | File[]) => {
+    const selectedFile = Array.isArray(fileData) ? fileData[0] : fileData;
+    if (selectedFile) {
       if (
         selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
         selectedFile.name.toLowerCase().endsWith('.xlsx')
@@ -63,13 +63,14 @@ export default function ExcelToPdfPage() {
       // 4. Generate PDF using html2pdf
       const html2pdf = (await import('html2pdf.js')).default;
       const element = hiddenContainerRef.current;
+      if (!element) throw new Error("Render container missing");
       
       const opt = {
         margin:       0.5,
         filename:     `converted-${excelFile.name.replace('.xlsx', '.pdf')}`,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' as const }
       };
 
       const pdfBuffer = await html2pdf().set(opt).from(element).outputPdf('arraybuffer');
@@ -138,10 +139,9 @@ export default function ExcelToPdfPage() {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <FileUpload
-                onFilesSelected={handleFileUpload}
-                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                maxFiles={1}
-                title="Drop your Excel file here"
+                onFileSelect={handleFileUpload}
+                accept={{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }}
+                label="Drop your Excel file here"
               />
             </motion.div>
           )}

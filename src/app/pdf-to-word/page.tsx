@@ -21,9 +21,9 @@ export default function PdfToWordPage() {
   
   const { toast } = useToast();
 
-  const handleFileUpload = (files: File[]) => {
-    if (files.length > 0) {
-      const selectedFile = files[0];
+  const handleFileUpload = (fileData: File | File[]) => {
+    const selectedFile = Array.isArray(fileData) ? fileData[0] : fileData;
+    if (selectedFile) {
       if (selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf')) {
         setFile(selectedFile);
         processFile(selectedFile);
@@ -140,10 +140,9 @@ export default function PdfToWordPage() {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <FileUpload
-                onFilesSelected={handleFileUpload}
-                accept="application/pdf,.pdf"
-                maxFiles={1}
-                title="Drop your PDF here"
+                onFileSelect={handleFileUpload}
+                accept={{ 'application/pdf': ['.pdf'] }}
+                label="Drop your PDF here"
               />
             </motion.div>
           )}
