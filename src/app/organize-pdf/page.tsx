@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Trash2, RotateCw, Loader2 } from 'lucide-react';
+import { Download, Trash2, RotateCw, Loader2, Eye } from 'lucide-react';
 import { PDFDocument, degrees } from 'pdf-lib';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import { useToast } from '@/components/ui/toast-provider';
 import clsx from 'clsx';
 
@@ -29,6 +30,8 @@ export default function OrganizePDF() {
   const [pages, setPages] = useState<{ originalIndex: number; image: string; rotation: number; id: string }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Load PDF and render thumbnails
@@ -112,27 +115,34 @@ export default function OrganizePDF() {
     setPages(newPages);
   };
 
+  const generatePDF = async () => {
+    if (!pdfFile || pages.length === 0) return null;
+    
+    const arrayBuffer = await pdfFile.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const newPdf = await PDFDocument.create();
+
+    for (const pageItem of pages) {
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageItem.originalIndex]);
+      
+      const existingRotation = copiedPage.getRotation().angle;
+      copiedPage.setRotation(degrees(existingRotation + pageItem.rotation));
+      
+      newPdf.addPage(copiedPage);
+    }
+
+    const pdfBytes = await newPdf.save();
+    return new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+  };
+
   const downloadPDF = async () => {
     if (!pdfFile || pages.length === 0) return;
     setIsProcessing(true);
 
     try {
-      const arrayBuffer = await pdfFile.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const newPdf = await PDFDocument.create();
+      const blob = await generatePDF();
+      if (!blob) return;
 
-      for (const pageItem of pages) {
-        const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageItem.originalIndex]);
-        
-        // Add existing rotation logic if needed, simplify here
-        const existingRotation = copiedPage.getRotation().angle;
-        copiedPage.setRotation(degrees(existingRotation + pageItem.rotation));
-        
-        newPdf.addPage(copiedPage);
-      }
-
-      const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `organized-${pdfFile.name}`;
@@ -143,6 +153,33 @@ export default function OrganizePDF() {
       toast('Failed to save PDF.', 'error');
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handlePreviewOpen = async () => {
+    if (!pdfFile || pages.length === 0) return;
+    setIsProcessing(true);
+
+    try {
+      const blob = await generatePDF();
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+      setPreviewModalUrl(url);
+      setIsPreviewModalOpen(true);
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast('Failed to generate preview.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const closePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    if (previewModalUrl) {
+      URL.revokeObjectURL(previewModalUrl);
+      setPreviewModalUrl(null);
     }
   };
 
@@ -198,6 +235,18 @@ export default function OrganizePDF() {
                         className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-transparent border border-border-strong text-txt-secondary hover:text-txt-primary hover:border-txt-primary transition-all font-medium"
                      >
                         Cancel
+                    </button>
+                    <button 
+                        onClick={handlePreviewOpen}
+                        disabled={isProcessing}
+                        className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-element border border-border-main hover:border-txt-primary text-txt-primary transition-all font-bold shadow-sm flex items-center justify-center space-x-2"
+                    >
+                        {isProcessing ? 'Processing...' : (
+                            <>
+                                <Eye className="w-5 h-5" />
+                                <span>Preview</span>
+                            </>
+                        )}
                     </button>
                     <button 
                         onClick={downloadPDF}
@@ -278,6 +327,13 @@ export default function OrganizePDF() {
         </div>
       )}
       </motion.div>
+      <PreviewModal
+         isOpen={isPreviewModalOpen}
+         onClose={closePreviewModal}
+         fileSrc={previewModalUrl}
+         fileType="pdf"
+         fileName={`organized-${pdfFile?.name || 'document.pdf'}`}
+       />
     </main>
   );
 }

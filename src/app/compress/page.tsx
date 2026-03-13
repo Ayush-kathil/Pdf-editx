@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileDown, Download, RefreshCw, X, ShieldCheck, FileInput } from 'lucide-react';
+import { FileDown, Download, RefreshCw, X, ShieldCheck, FileInput, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import { compressPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
 import { useToast } from '@/components/ui/toast-provider';
@@ -25,29 +26,42 @@ const fadeInUp = {
 };
 
 export default function CompressPage() {
-  const [step, setStep] = useState<'UPLOAD' | 'SUCCESS'>('UPLOAD');
+  const [step, setStep] = useState<'UPLOAD' | 'SETTINGS' | 'SUCCESS'>('UPLOAD');
   const [file, setFile] = useState<File | null>(null);
   const [compressedPdf, setCompressedPdf] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [compressionMode, setCompressionMode] = useState<'QUALITY' | 'SIZE'>('QUALITY');
   const [quality, setQuality] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
+  const [targetSizeKB, setTargetSizeKB] = useState<number>(100);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // File selection handler
-  const handleFileSelect = async (selectedFile: File | File[]) => {
+  const handleFileSelect = (selectedFile: File | File[]) => {
     if (Array.isArray(selectedFile)) return;
     setFile(selectedFile);
+    setStep('SETTINGS');
+  };
+
+  const handleCompress = async () => {
+    if (!file) return;
     setIsProcessing(true);
     
-    // Process immediately for compression logic after short delay for UI
     try {
-        const fileBuffer = await selectedFile.arrayBuffer();
-        const compressedBytes = await compressPdf(fileBuffer, quality);
+        const fileBuffer = await file.arrayBuffer();
+        let compressedBytes;
+        
+        if (compressionMode === 'SIZE') {
+             compressedBytes = await compressPdf(fileBuffer, 'TARGET', targetSizeKB);
+        } else {
+             compressedBytes = await compressPdf(fileBuffer, quality);
+        }
+        
         setCompressedPdf(compressedBytes);
         setStep('SUCCESS');
         toast('PDF compressed successfully!', 'success');
     } catch (err: any) {
         toast(err.message || 'Failed to compress PDF.', 'error');
-        setStep('UPLOAD');
     } finally {
         setIsProcessing(false);
     }
@@ -70,7 +84,32 @@ export default function CompressPage() {
   const handleReset = () => {
     setFile(null);
     setCompressedPdf(null);
+    setPreviewModalUrl(null);
     setStep('UPLOAD');
+  };
+
+  const handlePreviewOpen = () => {
+    if (!compressedPdf) return;
+    const blob = new Blob([compressedPdf as any], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    setPreviewModalUrl(url);
+    setIsPreviewModalOpen(true);
+  };
+
+  const closePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    if (previewModalUrl) {
+      URL.revokeObjectURL(previewModalUrl);
+      setPreviewModalUrl(null);
+    }
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
@@ -92,7 +131,7 @@ export default function CompressPage() {
           <header className="mb-12 text-center space-y-5">
             <div className="inline-flex items-center justify-center mb-2">
                <div className="p-4 bg-card rounded-[2rem] border border-border-main shadow-2xl backdrop-blur-xl">
-                 <FileDown className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                 <FileDown className="w-10 h-10 text-orange-500 stroke-[1.5]" />
                </div>
             </div>
             
@@ -120,32 +159,103 @@ export default function CompressPage() {
                   transition={springTransition}
                   className="space-y-8 relative"
                 >
-                  <FileUpload onFileSelect={handleFileSelect} />
-                  
-                  {/* Simple Quality Selector */}
-                  <div className="flex justify-center gap-4">
-                     {(['HIGH', 'MEDIUM', 'LOW'] as const).map((q) => (
-                        <button
-                            key={q}
-                            onClick={() => setQuality(q)}
-                            className={clsx(
-                                "px-4 py-2 rounded-full text-xs font-bold transition-all border",
-                                quality === q 
-                                    ? "bg-txt-primary text-page border-txt-primary" 
-                                    : "bg-element text-txt-secondary border-border-main hover:border-txt-primary"
-                            )}
-                        >
-                            {q} QUALITY
-                        </button>
-                     ))}
-                  </div>
+                  <FileUpload onFileSelect={handleFileSelect} accept={{ 'application/pdf': ['.pdf'] }} />
+                </motion.div>
+              )}
 
-                  {isProcessing && (
-                      <div className="text-center text-txt-tertiary text-sm animate-pulse flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Compressing...</span>
-                      </div>
-                  )}
+              {step === 'SETTINGS' && (
+                <motion.div
+                   key="settings"
+                   initial={{ opacity: 0, x: 50 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, x: -50 }}
+                   transition={springTransition}
+                   className="bg-card backdrop-blur-2xl border border-border-main shadow-xl p-8 md:p-10 rounded-[2.5rem] relative overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-txt-primary/5 to-transparent pointer-events-none" />
+                    
+                    <button 
+                        onClick={() => setStep('UPLOAD')}
+                        className="absolute top-6 right-6 text-txt-tertiary hover:text-txt-primary transition-colors p-2 hover:bg-element-hover rounded-full z-10"
+                        title="Cancel"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+
+                    <h2 className="text-2xl font-bold mb-6 text-txt-primary relative z-10">Compression Settings</h2>
+                    
+                    <div className="relative z-10">
+                        {/* Mode Toggle */}
+                        <div className="flex bg-element p-1 rounded-xl mb-8">
+                            <button 
+                                onClick={() => setCompressionMode('QUALITY')}
+                                className={clsx(
+                                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
+                                    compressionMode === 'QUALITY' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
+                                )}
+                            >
+                                Quality
+                            </button>
+                            <button 
+                                onClick={() => setCompressionMode('SIZE')}
+                                className={clsx(
+                                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all",
+                                    compressionMode === 'SIZE' ? "bg-card text-txt-primary shadow-sm" : "text-txt-secondary hover:text-txt-primary"
+                                )}
+                            >
+                                Target Size
+                            </button>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="mb-8 space-y-6">
+                            {compressionMode === 'QUALITY' ? (
+                                <div className="space-y-4">
+                                  <label className="block text-txt-primary font-medium">Compression Level</label>
+                                  <div className="flex justify-center gap-4">
+                                    {(['HIGH', 'MEDIUM', 'LOW'] as const).map((q) => (
+                                        <button
+                                            key={q}
+                                            onClick={() => setQuality(q)}
+                                            className={clsx(
+                                                "px-4 py-3 rounded-xl text-sm font-bold transition-all border flex-1",
+                                                quality === q 
+                                                    ? "bg-txt-primary text-page border-txt-primary" 
+                                                    : "bg-element text-txt-secondary border-border-main hover:border-txt-primary"
+                                            )}
+                                        >
+                                            {q}
+                                        </button>
+                                    ))}
+                                  </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <label className="block text-txt-primary font-medium">Max File Size (KB)</label>
+                                    <input 
+                                        type="number" 
+                                        value={targetSizeKB}
+                                        onChange={(e) => setTargetSizeKB(parseInt(e.target.value) || 0)}
+                                        className="w-full px-5 py-4 rounded-xl bg-element border border-border-main focus:border-txt-primary outline-none text-txt-primary"
+                                    />
+                                    <p className="text-sm text-txt-secondary">We will repeatedly compress the PDF until it fits this limit.</p>
+                                </div>
+                            )}
+                            
+                            <div className="bg-element/50 p-4 rounded-xl border border-border-main flex justify-between items-center text-sm">
+                                <span className="text-txt-secondary">Original Size: </span>
+                                <span className="text-txt-primary font-bold">{formatSize(file?.size || 0)}</span>
+                            </div>
+                        </div>
+
+                        <button 
+                             onClick={handleCompress}
+                             disabled={isProcessing}
+                             className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
+                        >
+                             {isProcessing ? "Compressing..." : "Compress PDF"}
+                        </button>
+                    </div>
                 </motion.div>
               )}
 
@@ -160,12 +270,16 @@ export default function CompressPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-txt-primary/5 to-transparent pointer-events-none" />
 
                   <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
-                     <FileDown className="w-12 h-12 text-txt-primary stroke-[1.5]" />
+                     <FileDown className="w-12 h-12 text-orange-500 stroke-[1.5]" />
                   </div>
                   
-                  <div className="space-y-3 relative z-10 mb-10">
+                  <div className="space-y-3 relative z-10 mb-8">
                     <h2 className="text-4xl font-bold text-txt-primary tracking-tighter">Compressed.</h2>
-                    <p className="text-txt-secondary text-lg">Your file is ready.</p>
+                    <div className="flex items-center justify-center gap-4 text-lg">
+                        <span className="text-txt-tertiary line-through">{formatSize(file?.size || 0)}</span>
+                        <span>→</span>
+                        <span className="text-txt-primary font-bold">{formatSize(compressedPdf?.byteLength || 0)}</span>
+                    </div>
                   </div>
 
                   <div className="w-full space-y-4 relative z-10">
@@ -179,15 +293,27 @@ export default function CompressPage() {
                       <span>Save Compressed PDF</span>
                     </motion.button>
                     
-                    <motion.button
-                      whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleReset}
-                      className="w-full py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                      <span>Compress Another</span>
-                    </motion.button>
+                    <div className="flex gap-4 w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handlePreviewOpen}
+                        className="flex-1 py-4 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold shadow-sm transition-all flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="w-5 h-5" />
+                        <span>Preview</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleReset}
+                        className="flex-1 py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <RefreshCw className="w-5 h-5" />
+                        <span>Compress Another</span>
+                      </motion.button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -203,6 +329,14 @@ export default function CompressPage() {
           </motion.footer>
 
       </motion.div>
+
+       <PreviewModal
+         isOpen={isPreviewModalOpen}
+         onClose={closePreviewModal}
+         fileSrc={previewModalUrl}
+         fileType="pdf"
+         fileName={`compressed_${file?.name || 'document.pdf'}`}
+       />
     </main>
   );
 }

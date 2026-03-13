@@ -117,15 +117,39 @@ export async function unlockPdf(fileBuffer: ArrayBuffer, password: string): Prom
 }
 
 /**
- * Wrapper for Compression (Standard Quality)
+ * Wrapper for Compression (Standard Quality or Target Size)
  */
-export async function compressPdf(fileBuffer: ArrayBuffer, qualityLevel: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM'): Promise<Uint8Array> {
+export async function compressPdf(
+    fileBuffer: ArrayBuffer, 
+    qualityLevel: 'HIGH' | 'MEDIUM' | 'LOW' | 'TARGET' = 'MEDIUM',
+    targetSizeKB?: number
+): Promise<Uint8Array> {
+    if (qualityLevel === 'TARGET' && targetSizeKB) {
+        return compressPdfToTargetSize(fileBuffer, targetSizeKB * 1024);
+    }
+    
     const settings = {
         HIGH: { scale: 1.5, quality: 0.7 },
         MEDIUM: { scale: 1.0, quality: 0.5 },
-        LOW: { scale: 0.8, quality: 0.3 }
+        LOW: { scale: 0.8, quality: 0.3 },
+        TARGET: { scale: 1.0, quality: 0.5 } // fallback
     };
     return processPdf(fileBuffer, undefined, settings[qualityLevel]);
+}
+
+async function compressPdfToTargetSize(fileBuffer: ArrayBuffer, maxBytes: number): Promise<Uint8Array> {
+    // Try a few common settings and pick the one that fits
+    const pass1 = await processPdf(fileBuffer, undefined, { scale: 1.5, quality: 0.6 });
+    if (pass1.byteLength <= maxBytes) return pass1;
+
+    const pass2 = await processPdf(fileBuffer, undefined, { scale: 1.0, quality: 0.4 });
+    if (pass2.byteLength <= maxBytes) return pass2;
+
+    const pass3 = await processPdf(fileBuffer, undefined, { scale: 0.8, quality: 0.2 });
+    if (pass3.byteLength <= maxBytes) return pass3;
+
+    // If still fail, push lowest quality possible
+    return processPdf(fileBuffer, undefined, { scale: 0.6, quality: 0.1 });
 }
 
 

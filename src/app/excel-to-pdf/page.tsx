@@ -1,0 +1,219 @@
+'use client';
+
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Loader2, Download, Table, Eye } from 'lucide-react';
+import Link from 'next/link';
+import { useToast } from '@/components/ui/toast-provider';
+import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
+import * as XLSX from 'xlsx';
+
+export default function ExcelToPdfPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState<'UPLOAD' | 'PROCESSING' | 'SUCCESS'>('UPLOAD');
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  
+  const { toast } = useToast();
+  const hiddenContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleFileUpload = (files: File[]) => {
+    if (files.length > 0) {
+      const selectedFile = files[0];
+      if (
+        selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+        selectedFile.name.toLowerCase().endsWith('.xlsx')
+      ) {
+        setFile(selectedFile);
+        processFile(selectedFile);
+      } else {
+        toast('Please upload a valid XLSX file', 'error');
+      }
+    }
+  };
+
+  const processFile = async (excelFile: File) => {
+    setStep('PROCESSING');
+    try {
+      // 1. Read Excel using SheetJS
+      const arrayBuffer = await excelFile.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      // 2. Convert sheet to HTML
+      const htmlContent = XLSX.utils.sheet_to_html(worksheet);
+
+      // 3. Put HTML into a hidden container with simple styling for pdf rendering
+      if (hiddenContainerRef.current) {
+        hiddenContainerRef.current.innerHTML = `
+          <div style="padding: 20px; font-family: sans-serif; color: #000; background: #fff;">
+            <style>
+              table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+              td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f4f4f4; }
+            </style>
+            ${htmlContent}
+          </div>
+        `;
+      }
+
+      // 4. Generate PDF using html2pdf
+      const html2pdf = (await import('html2pdf.js')).default;
+      const element = hiddenContainerRef.current;
+      
+      const opt = {
+        margin:       0.5,
+        filename:     `converted-${excelFile.name.replace('.xlsx', '.pdf')}`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+
+      const pdfBuffer = await html2pdf().set(opt).from(element).outputPdf('arraybuffer');
+      const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+      
+      setPdfBlob(blob);
+      setStep('SUCCESS');
+      toast('Converted Excel to PDF successfully', 'success');
+      
+      if (hiddenContainerRef.current) hiddenContainerRef.current.innerHTML = '';
+
+    } catch (error) {
+      console.error('Conversion error:', error);
+      toast('Failed to convert Excel file', 'error');
+      setStep('UPLOAD');
+      setFile(null);
+    }
+  };
+
+  const handleDownload = () => {
+    if (pdfBlob && file) {
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `converted-${file.name.replace('.xlsx', '.pdf')}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  return (
+    <main className="min-h-screen flex flex-col items-center p-6 relative overflow-hidden bg-page">
+      <div className="hidden">
+        <div ref={hiddenContainerRef} id="pdf-render-container"></div>
+      </div>
+
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <div className="absolute top-[20%] right-[10%] w-[40vw] h-[40vw] bg-green-500/5 rounded-full blur-[100px] animate-pulse-slow" />
+      </div>
+
+      <div className="w-full max-w-4xl flex justify-start pt-20 mb-8 z-10">
+        <Link href="/excel" className="inline-flex items-center text-txt-secondary hover:text-txt-primary transition-colors">
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          <span>Back to Excel Suite</span>
+        </Link>
+      </div>
+
+      <motion.div 
+        className="w-full max-w-2xl bg-card border border-border-main rounded-3xl p-8 z-10 shadow-xl relative overflow-hidden"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="text-center mb-8">
+          <Table className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-txt-primary mb-2">Excel to PDF</h1>
+          <p className="text-txt-secondary">Convert your Excel spreadsheets perfectly to fixed PDF layouts.</p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {step === 'UPLOAD' && (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
+              <FileUpload
+                onFilesSelected={handleFileUpload}
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                maxFiles={1}
+                title="Drop your Excel file here"
+              />
+            </motion.div>
+          )}
+
+          {step === 'PROCESSING' && (
+            <motion.div
+              key="processing"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="flex flex-col items-center justify-center py-12"
+            >
+              <Loader2 className="w-12 h-12 text-green-500 animate-spin mb-4" />
+              <h2 className="text-xl font-semibold text-txt-primary">Converting Spreadsheet...</h2>
+              <p className="text-txt-secondary mt-2">Parsing grid data and formatting tables</p>
+            </motion.div>
+          )}
+
+          {step === 'SUCCESS' && (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center py-8"
+            >
+              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
+                <Table className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-txt-primary mb-2">Conversion Complete!</h2>
+              <p className="text-txt-secondary mb-8">{file?.name} has been processed.</p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="px-6 py-3 rounded-xl bg-element border border-border-main hover:border-txt-primary text-txt-primary transition-all font-bold shadow-sm flex items-center justify-center space-x-2"
+                >
+                  <Eye className="w-5 h-5" />
+                  <span>Preview</span>
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-8 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition-all font-bold shadow-lg flex items-center justify-center space-x-2"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download PDF</span>
+                </button>
+              </div>
+              
+              <button
+                onClick={() => {
+                  setStep('UPLOAD');
+                  setFile(null);
+                  setPdfBlob(null);
+                }}
+                className="mt-8 text-txt-secondary hover:text-txt-primary text-sm font-medium transition-colors"
+              >
+                Convert another spreadsheet
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {pdfBlob && (
+        <PreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          fileSrc={URL.createObjectURL(pdfBlob)}
+          fileType="pdf"
+          fileName={`converted-${file?.name.replace('.xlsx', '.pdf')}`}
+        />
+      )}
+    </main>
+  );
+}

@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Download, RefreshCw, X, FileText, Lock } from 'lucide-react';
+import { ShieldCheck, Download, RefreshCw, X, FileText, Lock, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { DetailsForm } from '@/components/ui/DetailsForm';
 import { PasswordForm } from '@/components/ui/PasswordForm';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import { unlockPdf, derivePassword } from '@/lib/pdf-utils';
 import { useToast } from '@/components/ui/toast-provider';
 
@@ -45,6 +46,8 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [unlockedPdf, setUnlockedPdf] = useState<Uint8Array | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   // specific handlers
@@ -111,6 +114,22 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const handlePreview = () => {
+    if (!unlockedPdf) return;
+    const blob = new Blob([unlockedPdf as any], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    setPreviewUrl(url);
+    setIsPreviewOpen(true);
+  };
+
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-page selection:bg-txt-primary/20">
       
@@ -130,7 +149,7 @@ export default function Home() {
           <motion.header variants={fadeInUp} className="mb-12 text-center space-y-5">
             <div className="inline-flex items-center justify-center mb-2">
                <div className="p-4 bg-card rounded-[2rem] border border-border-main shadow-2xl backdrop-blur-xl">
-                 <ShieldCheck className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                 <ShieldCheck className="w-10 h-10 text-red-500 stroke-[1.5]" />
                </div>
             </div>
             
@@ -187,7 +206,7 @@ export default function Home() {
                         className="flex flex-col items-center justify-center p-8 rounded-[2.5rem] bg-card border border-border-main shadow-xl hover:border-txt-primary hover:shadow-2xl transition-all group"
                     >
                         <div className="p-4 rounded-2xl bg-element group-hover:bg-element-hover transition-colors mb-6">
-                            <ShieldCheck className="w-8 h-8 text-txt-primary" />
+                            <ShieldCheck className="w-8 h-8 text-red-500" />
                         </div>
                         <h3 className="text-2xl font-bold text-txt-primary mb-2">Aadhaar</h3>
                         <p className="text-sm text-txt-secondary text-center px-4">
@@ -291,7 +310,7 @@ export default function Home() {
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-txt-primary/5 to-transparent pointer-events-none" />
 
                   <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
-                     <ShieldCheck className="w-12 h-12 text-txt-primary stroke-[1.5]" />
+                     <ShieldCheck className="w-12 h-12 text-red-500 stroke-[1.5]" />
                   </div>
                   
                   <div className="space-y-3 relative z-10 mb-10">
@@ -310,15 +329,27 @@ export default function Home() {
                       <span>Save PDF</span>
                     </motion.button>
                     
-                    <motion.button
-                      whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleReset}
-                      className="w-full py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                      <span>Start Over</span>
-                    </motion.button>
+                    <div className="flex gap-4 w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handlePreview}
+                        className="flex-1 py-4 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold shadow-sm transition-all flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="w-5 h-5" />
+                        <span>Preview</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleReset}
+                        className="flex-1 py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <RefreshCw className="w-5 h-5" />
+                        <span>Start Over</span>
+                      </motion.button>
+                    </div>
                   </div>
                   
                   <p className="text-[10px] uppercase tracking-widest text-txt-tertiary mt-8 relative z-10">
@@ -339,6 +370,14 @@ export default function Home() {
              </div>
           </motion.footer>
       </motion.div>
+
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={closePreview}
+        fileSrc={previewUrl}
+        fileType="pdf"
+        fileName={`unlocked_${file?.name || 'document.pdf'}`}
+      />
     </main>
   );
 }

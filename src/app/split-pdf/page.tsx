@@ -94,7 +94,7 @@ export default function SplitPage() {
           <header className="mb-12 text-center space-y-5">
             <div className="inline-flex items-center justify-center mb-2">
                <div className="p-4 bg-card rounded-[2rem] border border-border-main shadow-2xl backdrop-blur-xl">
-                 <Scissors className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                 <Scissors className="w-10 h-10 text-pink-500 stroke-[1.5]" />
                </div>
             </div>
             
@@ -184,7 +184,7 @@ export default function SplitPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-txt-primary/5 to-transparent pointer-events-none" />
 
                   <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
-                     <Scissors className="w-12 h-12 text-txt-primary stroke-[1.5]" />
+                     <Scissors className="w-12 h-12 text-pink-500 stroke-[1.5]" />
                   </div>
                   
                   <div className="space-y-3 relative z-10 mb-10">

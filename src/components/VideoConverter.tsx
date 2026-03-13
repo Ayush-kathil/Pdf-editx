@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileVideo, Download, RefreshCw, X, Upload, Loader2, Film } from 'lucide-react';
+import { FileVideo, Download, RefreshCw, X, Upload, Loader2, Film, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useToast } from '@/components/ui/toast-provider';
@@ -45,6 +46,8 @@ export default function VideoConverter() {
   const [progress, setProgress] = useState(0); // 0-100 overall
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const ffmpegRef = useRef<any>(null);
   const messageRef = useRef<HTMLParagraphElement | null>(null);
   const { toast } = useToast();
@@ -210,6 +213,22 @@ export default function VideoConverter() {
     setConvertedFiles([]);
     setStep('UPLOAD');
     setProgress(0);
+    setPreviewModalUrl(null);
+  };
+
+  const handlePreviewOpen = () => {
+    if (convertedFiles.length === 0) return;
+    const url = URL.createObjectURL(convertedFiles[0].blob);
+    setPreviewModalUrl(url);
+    setIsPreviewModalOpen(true);
+  };
+
+  const closePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    if (previewModalUrl) {
+      URL.revokeObjectURL(previewModalUrl);
+      setPreviewModalUrl(null);
+    }
   };
 
   return (
@@ -337,15 +356,27 @@ export default function VideoConverter() {
 
                   <div className="w-full space-y-4 relative z-10">
                     {convertedFiles.length === 1 ? (
-                        <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleDownload(convertedFiles[0])}
-                        className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
-                        >
-                        <Download className="w-6 h-6" />
-                        <span>Download Video</span>
-                        </motion.button>
+                        <div className="w-full space-y-4">
+                            <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleDownload(convertedFiles[0])}
+                            className="w-full py-5 rounded-2xl bg-txt-primary hover:bg-txt-primary/90 text-page font-bold text-xl shadow-lg transition-all flex items-center justify-center space-x-3"
+                            >
+                            <Download className="w-6 h-6" />
+                            <span>Download Video</span>
+                            </motion.button>
+
+                            <motion.button
+                            whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handlePreviewOpen}
+                            className="w-full py-4 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold shadow-sm transition-all flex items-center justify-center space-x-2"
+                            >
+                            <Eye className="w-5 h-5" />
+                            <span>Preview</span>
+                            </motion.button>
+                        </div>
                     ) : (
                          <div className="space-y-2 max-h-60 overflow-y-auto">
                             {convertedFiles.map((f, i) => (
@@ -383,6 +414,13 @@ export default function VideoConverter() {
         }}
         onError={() => toast("Failed to load FFmpeg script library", 'error')}
       />
+      <PreviewModal
+         isOpen={isPreviewModalOpen}
+         onClose={closePreviewModal}
+         fileSrc={previewModalUrl}
+         fileType="video"
+         fileName={convertedFiles[0]?.name || 'video.mp4'}
+       />
     </main>
   );
 }

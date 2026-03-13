@@ -140,7 +140,7 @@ export default function PdfToJpg() {
                 className="w-full max-w-md bg-card/80 backdrop-blur-md p-8 rounded-[3rem] border border-border-main text-center shadow-2xl"
             >
                 <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover border border-border-strong rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <ImageIcon className="w-10 h-10 text-txt-primary" />
+                    <ImageIcon className="w-10 h-10 text-fuchsia-500" />
                 </div>
                 <h3 className="text-xl font-bold text-txt-primary mb-2 line-clamp-1">{pdfFile.name}</h3>
                 <p className="text-txt-secondary mb-8">Ready to convert to JPG</p>

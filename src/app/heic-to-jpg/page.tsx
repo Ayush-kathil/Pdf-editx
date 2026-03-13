@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Download, RefreshCw, X, ArrowUp, ArrowDown, Camera, Loader2 } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import clsx from 'clsx';
 import { useToast } from '@/components/ui/toast-provider';
+import { Eye } from 'lucide-react';
 // import heic2any from 'heic2any'; // Removed for SSR compatibility
 import JSZip from 'jszip';
 
@@ -32,6 +34,8 @@ export default function HeicToJpgPage() {
   const [failedFiles, setFailedFiles] = useState<{name: string, reason: string}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   /* Removed top-level import to fix SSR error */
@@ -240,6 +244,22 @@ export default function HeicToJpgPage() {
     setFailedFiles([]);
     setStep('UPLOAD');
     setProgress(0);
+    setPreviewModalUrl(null);
+  };
+
+  const handlePreviewOpen = () => {
+    if (convertedFiles.length === 0) return;
+    const url = URL.createObjectURL(convertedFiles[0].blob);
+    setPreviewModalUrl(url);
+    setIsPreviewModalOpen(true);
+  };
+
+  const closePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    if (previewModalUrl) {
+      URL.revokeObjectURL(previewModalUrl);
+      setPreviewModalUrl(null);
+    }
   };
 
   return (
@@ -261,7 +281,7 @@ export default function HeicToJpgPage() {
           <header className="mb-12 text-center space-y-5">
             <div className="inline-flex items-center justify-center mb-2">
                <div className="p-4 bg-card rounded-[2rem] border border-border-main shadow-2xl backdrop-blur-xl">
-                 <Camera className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                 <Camera className="w-10 h-10 text-lime-500 stroke-[1.5]" />
                </div>
             </div>
             
@@ -365,7 +385,7 @@ export default function HeicToJpgPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-txt-primary/5 to-transparent pointer-events-none" />
 
                   <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
-                     <Camera className="w-12 h-12 text-txt-primary stroke-[1.5]" />
+                     <Camera className="w-12 h-12 text-lime-500 stroke-[1.5]" />
                   </div>
                   
                   <div className="space-y-3 relative z-10 mb-10">
@@ -407,6 +427,18 @@ export default function HeicToJpgPage() {
                       <span>{convertedFiles.length > 1 ? 'Download All (ZIP)' : 'Save Image'}</span>
                     </motion.button>
                     
+                    {convertedFiles.length === 1 && (
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handlePreviewOpen}
+                        className="w-full py-4 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold shadow-sm transition-all flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="w-5 h-5" />
+                        <span>Preview</span>
+                      </motion.button>
+                    )}
+
                     <motion.button
                       whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
                       whileTap={{ scale: 0.98 }}
@@ -424,6 +456,14 @@ export default function HeicToJpgPage() {
           </div>
           
       </motion.div>
+
+       <PreviewModal
+         isOpen={isPreviewModalOpen}
+         onClose={closePreviewModal}
+         fileSrc={previewModalUrl}
+         fileType="image"
+         fileName={convertedFiles[0]?.name || 'image.jpg'}
+       />
     </main>
   );
 }

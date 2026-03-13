@@ -32,7 +32,7 @@ export default function RootLayout({
         <meta name="google-site-verification" content="xGevfp3B3CvlIc2uO-GrTSf7vr6XO6V5Y6UL0UPOnIE" />
         <meta 
           httpEquiv="Content-Security-Policy" 
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; img-src 'self' blob: data:;" 
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:; object-src 'self' blob:; img-src 'self' blob: data:; frame-src 'self' blob:; media-src 'self' blob:;" 
         />
         <script src="/pdf.min.js" defer></script>
       </head>

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw, Camera, Grid, Type } from 'lucide-react';
+import { ShieldCheck, FileDown, Github, Linkedin, Globe, ArrowRight, Image as ImageIcon, Layers, Scissors, Images, RotateCw, Camera, Grid, Type, FileText, Table, Film } from 'lucide-react';
 
 const springTransition = {
   type: "spring" as const,
@@ -95,7 +95,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <ShieldCheck className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <ShieldCheck className="w-8 h-8 text-red-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Unlock PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Remove password protection securely. No uploads.</p>
@@ -123,7 +123,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                          <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <FileDown className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <FileDown className="w-8 h-8 text-orange-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Compress PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Reduce file size locally. <br/>Efficient and fast.</p>
@@ -151,7 +151,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <ImageIcon className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <ImageIcon className="w-8 h-8 text-yellow-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Compress Image</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Optimize photos to target size. <br/>JPG, PNG, WebP.</p>
@@ -179,7 +179,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Layers className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Layers className="w-8 h-8 text-purple-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Merge PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Combine multiple PDFs into one document.</p>
@@ -207,7 +207,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Scissors className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Scissors className="w-8 h-8 text-pink-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Split PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Extract ranges or pages from a PDF.</p>
@@ -235,7 +235,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Images className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Images className="w-8 h-8 text-cyan-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Image to PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Convert photos to PDF. <br/>With quality control.</p>
@@ -263,7 +263,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <RotateCw className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <RotateCw className="w-8 h-8 text-teal-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Rotate PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Fix page orientation. <br/>All pages at once.</p>
@@ -291,7 +291,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Camera className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Camera className="w-8 h-8 text-lime-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">HEIC to JPG</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Convert HEIC photos. <br/>Bulk conversion supported.</p>
@@ -319,7 +319,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <span className="text-2xl">🎬</span>
+                                <Film className="w-8 h-8 text-indigo-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">MOV to MP4</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Convert video files. <br/>Drag & Drop.</p>
@@ -348,7 +348,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Grid className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Grid className="w-8 h-8 text-amber-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Organize PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Reorder and delete pages. <br/>Visual editor.</p>
@@ -376,7 +376,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <Type className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <Type className="w-8 h-8 text-rose-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">Watermark PDF</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Add safety text text. <br/>Customizable styles.</p>
@@ -404,7 +404,7 @@ export default function LandingPage() {
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div>
                             <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                                <ImageIcon className="w-8 h-8 text-txt-primary stroke-[1.5]" />
+                                <ImageIcon className="w-8 h-8 text-fuchsia-500 stroke-[1.5]" />
                             </div>
                             <h2 className="text-2xl font-bold text-txt-primary mb-2">PDF to JPG</h2>
                             <p className="text-txt-secondary text-base leading-relaxed">Convert pages to photos. <br/>High quality output.</p>
@@ -412,6 +412,62 @@ export default function LandingPage() {
                         
                         <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
                             <span>Open Tool</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 13: Word Suite */}
+             <Link href="/word" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <FileText className="w-8 h-8 text-blue-500 stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Word Suite</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">PDF to Word and Word to PDF conversions.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Suite</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </div>
+                </motion.div>
+            </Link>
+
+             {/* Tool 14: Excel Suite */}
+             <Link href="/excel" className="group">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.3 }}
+                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.02, y: -10 }}
+                    className="min-h-[340px] h-auto rounded-[2.5rem] bg-card border border-border-main p-8 flex flex-col justify-between transition-all duration-500 relative overflow-hidden shadow-xl hover:shadow-2xl hover:border-txt-primary"
+                >
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-16 h-16 bg-element border border-border-strong rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                                <Table className="w-8 h-8 text-green-500 stroke-[1.5]" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-txt-primary mb-2">Excel Suite</h2>
+                            <p className="text-txt-secondary text-base leading-relaxed">PDF to Excel and Excel to PDF conversions.</p>
+                        </div>
+                        
+                        <div className="flex items-center text-txt-primary font-semibold text-sm mt-4">
+                            <span>Open Suite</span>
                             <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                         </div>
                     </div>

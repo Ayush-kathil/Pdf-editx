@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Download, RefreshCw, X, ShieldCheck } from 'lucide-react';
+import { Image as ImageIcon, Download, RefreshCw, X, ShieldCheck, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PreviewModal } from '@/components/ui/PreviewModal';
 import { compressImage } from '@/lib/image-utils';
 import clsx from 'clsx';
 import { useToast } from '@/components/ui/toast-provider';
@@ -32,6 +33,8 @@ export default function ImageCompressPage() {
   const [quality, setQuality] = useState<number>(0.8);
   const [targetSizeKB, setTargetSizeKB] = useState<number>(100);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -89,7 +92,23 @@ export default function ImageCompressPage() {
     setFile(null);
     setCompressedBlob(null);
     setPreviewUrl(null);
+    setPreviewModalUrl(null);
     setStep('UPLOAD');
+  };
+
+  const handlePreviewOpen = () => {
+    if (!compressedBlob) return;
+    const url = URL.createObjectURL(compressedBlob);
+    setPreviewModalUrl(url);
+    setIsPreviewModalOpen(true);
+  };
+
+  const closePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    if (previewModalUrl) {
+      URL.revokeObjectURL(previewModalUrl);
+      setPreviewModalUrl(null);
+    }
   };
 
   // Helper to format bytes
@@ -120,7 +139,7 @@ export default function ImageCompressPage() {
           <header className="mb-12 text-center space-y-5">
             <div className="inline-flex items-center justify-center mb-2">
                <div className="p-4 bg-card rounded-[2rem] border border-border-main shadow-2xl backdrop-blur-xl">
-                 <ImageIcon className="w-10 h-10 text-txt-primary stroke-[1.5]" />
+                 <ImageIcon className="w-10 h-10 text-yellow-500 stroke-[1.5]" />
                </div>
             </div>
             
@@ -274,7 +293,7 @@ export default function ImageCompressPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-txt-primary/5 to-transparent pointer-events-none" />
 
                   <div className="w-24 h-24 bg-gradient-to-tr from-element to-element-hover rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
-                     <ImageIcon className="w-12 h-12 text-txt-primary stroke-[1.5]" />
+                     <ImageIcon className="w-12 h-12 text-yellow-500 stroke-[1.5]" />
                   </div>
                   
                   <div className="space-y-2 relative z-10 mb-8">
@@ -297,15 +316,27 @@ export default function ImageCompressPage() {
                       <span>Download Image</span>
                     </motion.button>
                     
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleReset}
-                      className="w-full py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                      <span>Compress Another</span>
-                    </motion.button>
+                    <div className="flex gap-4 w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handlePreviewOpen}
+                        className="flex-1 py-4 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold shadow-sm transition-all flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="w-5 h-5" />
+                        <span>Preview</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleReset}
+                        className="flex-1 py-4 rounded-2xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary font-medium transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <RefreshCw className="w-5 h-5" />
+                        <span>Compress Another</span>
+                      </motion.button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -321,6 +352,14 @@ export default function ImageCompressPage() {
           </motion.footer>
 
       </motion.div>
+
+       <PreviewModal
+         isOpen={isPreviewModalOpen}
+         onClose={closePreviewModal}
+         fileSrc={previewModalUrl}
+         fileType="image"
+         fileName={`compressed_${file?.name || 'image'}`}
+       />
     </main>
   );
 }
