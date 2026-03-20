@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Download, RefreshCw, X, FileText, Lock, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { DetailsForm } from '@/components/ui/DetailsForm';
 import { PasswordForm } from '@/components/ui/PasswordForm';
 import { PreviewModal } from '@/components/ui/PreviewModal';
@@ -112,6 +113,26 @@ export default function Home() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleShare = async () => {
+    if (!unlockedPdf || !file) return;
+    const blob = new Blob([unlockedPdf as any], { type: 'application/pdf' });
+    const fileName = `unlocked_${file.name}`;
+    const shareFile = new File([blob], fileName, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
+    }
   };
 
   const handlePreview = () => {
@@ -328,6 +349,12 @@ export default function Home() {
                       <Download className="w-6 h-6" />
                       <span>Save PDF</span>
                     </motion.button>
+                    
+                    <ShareButton
+                      onShare={handleShare}
+                      className="w-full py-5 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold text-xl shadow-lg transition-all"
+                      label="Share"
+                    />
                     
                     <div className="flex gap-4 w-full">
                       <motion.button

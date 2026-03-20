@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Maximize, Minimize, Download } from 'lucide-react';
+import { useToast } from '@/components/ui/toast-provider';
+import { ShareButton } from '@/components/ui/ShareButton';
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -51,6 +54,27 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
     document.body.removeChild(link);
   };
 
+  const handleShare = async () => {
+    if (!fileSrc) return;
+    try {
+      const response = await fetch(fileSrc);
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: blob.type });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: fileName,
+        });
+      } else {
+        toast('Sharing not supported on this device/browser', 'error');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast('Failed to prepare file for sharing', 'error');
+    }
+  };
+
   if (!isOpen || !fileSrc) return null;
 
   return (
@@ -74,6 +98,11 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
               Preview: {fileName}
             </h3>
             <div className="flex items-center space-x-1 sm:space-x-2">
+              <ShareButton
+                onShare={handleShare}
+                className="p-2 text-txt-secondary hover:text-txt-primary hover:bg-element-hover rounded-xl transition-colors"
+                label=""
+              />
               <button
                 onClick={handleDownload}
                 className="p-2 text-txt-secondary hover:text-txt-primary hover:bg-element-hover rounded-xl transition-colors"

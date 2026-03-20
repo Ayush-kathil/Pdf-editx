@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, Download, Table, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast-provider';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { PreviewModal } from '@/components/ui/PreviewModal';
 import * as XLSX from 'xlsx';
@@ -102,9 +103,29 @@ export default function ExcelToPdfPage() {
     }
   };
 
+  const handleShare = async () => {
+    if (!pdfBlob || !file) return;
+    const fileName = `converted-${file.name.replace('.xlsx', '.pdf')}`;
+    const shareFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
+    }
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center p-6 relative overflow-hidden bg-page">
-      <div className="hidden">
+      {/* Visually hidden container for rendering HTML to PDF without breaking html2canvas */}
+      <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '11in' }}>
         <div ref={hiddenContainerRef} id="pdf-render-container"></div>
       </div>
 
@@ -188,6 +209,11 @@ export default function ExcelToPdfPage() {
                   <Download className="w-5 h-5" />
                   <span>Download PDF</span>
                 </button>
+                <ShareButton
+                  onShare={handleShare}
+                  className="px-6 py-3 rounded-xl bg-element border border-border-main hover:border-txt-primary text-txt-primary transition-all font-bold shadow-sm"
+                  label="Share"
+                />
               </div>
               
               <button

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Images, Download, RefreshCw, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { imagesToPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
 import { useToast } from '@/components/ui/toast-provider';
@@ -107,6 +108,26 @@ export default function ImageToPdfPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast('Download started.', 'info');
+  };
+
+  const handleShare = async () => {
+    if (!pdfBytes) return;
+    const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+    const fileName = `images_converted.pdf`;
+    const shareFile = new File([blob], fileName, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
+    }
   };
 
   const handleReset = () => {
@@ -262,6 +283,12 @@ export default function ImageToPdfPage() {
                       <Download className="w-6 h-6" />
                       <span>Save PDF</span>
                     </motion.button>
+                    
+                    <ShareButton
+                      onShare={handleShare}
+                      className="w-full py-5 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold text-xl shadow-lg transition-all"
+                      label="Share"
+                    />
                     
                     <motion.button
                       whileHover={{ scale: 1.02, backgroundColor: "var(--bg-element-hover)" }}

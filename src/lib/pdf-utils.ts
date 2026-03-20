@@ -41,7 +41,9 @@ export async function processPdf(
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
   try {
-    const loadOptions: any = { data: fileBuffer };
+    // Clone the ArrayBuffer using .slice(0) so PDFjs Worker doesn't detach the original buffer
+    // This allows multi-pass operations (like Target Size compression) to reuse the buffer
+    const loadOptions: any = { data: fileBuffer.slice(0) };
     if (password) {
         loadOptions.password = password;
     }

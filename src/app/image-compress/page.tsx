@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Download, RefreshCw, X, ShieldCheck, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { PreviewModal } from '@/components/ui/PreviewModal';
 import { compressImage } from '@/lib/image-utils';
 import clsx from 'clsx';
@@ -85,6 +86,25 @@ export default function ImageCompressPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast('Download started.', 'info');
+  };
+
+  const handleShare = async () => {
+    if (!compressedBlob || !file) return;
+    const fileName = `compressed_${file.name}`;
+    const shareFile = new File([compressedBlob], fileName, { type: compressedBlob.type || 'image/jpeg' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
+    }
   };
 
   const handleReset = () => {
@@ -315,6 +335,12 @@ export default function ImageCompressPage() {
                       <Download className="w-6 h-6" />
                       <span>Download Image</span>
                     </motion.button>
+                    
+                    <ShareButton
+                      onShare={handleShare}
+                      className="w-full py-5 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold text-xl shadow-lg transition-all"
+                      label="Share"
+                    />
                     
                     <div className="flex gap-4 w-full">
                       <motion.button

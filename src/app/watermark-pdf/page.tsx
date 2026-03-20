@@ -6,6 +6,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { PDFDocument, rgb, degrees } from 'pdf-lib';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { useToast } from '@/components/ui/toast-provider';
+import { ShareButton } from '@/components/ui/ShareButton';
 
 const springTransition = {
   type: "spring" as const,
@@ -84,6 +85,46 @@ export default function WatermarkPDF() {
     } catch (error) {
       console.error('Error applying watermark:', error);
       toast('Failed to watermark PDF.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!pdfFile) return;
+    setIsProcessing(true);
+
+    try {
+      const arrayBuffer = await pdfFile.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const pages = pdfDoc.getPages();
+      const { r, g, b } = hexToRgb(color);
+
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        page.drawText(watermarkText, {
+          x: width / 2 - (fontSize * watermarkText.length / 4),
+          y: height / 2,
+          size: fontSize,
+          color: rgb(r, g, b),
+          opacity: opacity,
+          rotate: degrees(45),
+        });
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes as BlobPart], { type: 'application/pdf' });
+      const fileName = `watermarked-${pdfFile.name}`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: fileName });
+      } else {
+        toast('Sharing not supported on this device/browser', 'error');
+      }
+    } catch (error) {
+      console.error('Error sharing watermark:', error);
+      toast('Failed to prepare file for sharing.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -195,6 +236,11 @@ export default function WatermarkPDF() {
                             </>
                         )}
                     </button>
+                    <ShareButton 
+                        onShare={handleShare}
+                        className="w-full py-3.5 rounded-xl bg-element border border-border-main text-txt-primary hover:border-txt-primary transition-all font-bold shadow-sm"
+                        label="Share"
+                    />
                     <button 
                         onClick={() => setPdfFile(null)}
                         className="w-full py-3 rounded-xl bg-transparent border border-border-strong hover:border-txt-primary text-txt-secondary hover:text-txt-primary transition-colors text-sm font-medium active:scale-95"

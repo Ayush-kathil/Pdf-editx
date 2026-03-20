@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Download, RefreshCw, X, ArrowUp, ArrowDown, Camera, Loader2 } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { PreviewModal } from '@/components/ui/PreviewModal';
 import clsx from 'clsx';
 import { useToast } from '@/components/ui/toast-provider';
@@ -238,6 +239,24 @@ export default function HeicToJpgPage() {
     toast('Download started.', 'info');
   };
 
+  const handleShare = async () => {
+    if (convertedFiles.length === 0) return;
+
+    try {
+        const shareFiles = convertedFiles.map(f => new File([f.blob], f.name, { type: 'image/jpeg' }));
+        if (navigator.canShare && navigator.canShare({ files: shareFiles })) {
+            await navigator.share({
+                files: shareFiles,
+                title: convertedFiles.length > 1 ? `${convertedFiles.length} converted images` : convertedFiles[0].name,
+            });
+        } else {
+            toast('Sharing files not supported on this device/browser', 'error');
+        }
+    } catch (error) {
+        console.error('Error sharing:', error);
+    }
+  };
+
   const handleReset = () => {
     setFiles([]);
     setConvertedFiles([]);
@@ -426,6 +445,14 @@ export default function HeicToJpgPage() {
                       <Download className="w-6 h-6" />
                       <span>{convertedFiles.length > 1 ? 'Download All (ZIP)' : 'Save Image'}</span>
                     </motion.button>
+                    
+                    {convertedFiles.length >= 1 && (
+                        <ShareButton
+                            onShare={handleShare}
+                            className="w-full py-5 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold text-xl shadow-lg transition-all"
+                            label={`Share ${convertedFiles.length > 1 ? 'All' : ''}`}
+                        />
+                    )}
                     
                     {convertedFiles.length === 1 && (
                       <motion.button

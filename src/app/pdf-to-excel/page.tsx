@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, Download, FileDown } from 'lucide-react';
 import Link from 'next/link';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { useToast } from '@/components/ui/toast-provider';
 import { FileUpload } from '@/components/ui/FileUpload';
 import * as XLSX from 'xlsx';
@@ -40,8 +41,13 @@ export default function PdfToExcelPage() {
         throw new Error('PDF library failed to load.');
       }
       
+      if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+      }
+      
       const arrayBuffer = await pdfFile.arrayBuffer();
-      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      // Slice arrayBuffer to prevent ownership detachment during web worker transfer
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
       
       let allRows: string[][] = [];
 
@@ -102,6 +108,25 @@ export default function PdfToExcelPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!excelBlob || !file) return;
+    const fileName = `extracted-${file.name.replace('.pdf', '.xlsx')}`;
+    const shareFile = new File([excelBlob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
     }
   };
 
@@ -180,6 +205,11 @@ export default function PdfToExcelPage() {
                   <Download className="w-5 h-5" />
                   <span>Download XLSX format</span>
                 </button>
+                <ShareButton
+                  onShare={handleShare}
+                  className="px-6 py-3 rounded-xl bg-element border border-border-main hover:border-txt-primary text-txt-primary transition-all font-bold shadow-sm"
+                  label="Share"
+                />
               </div>
               
               <button

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileDown, Download, RefreshCw, X, ShieldCheck, FileInput, Eye } from 'lucide-react';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { PreviewModal } from '@/components/ui/PreviewModal';
 import { compressPdf } from '@/lib/pdf-utils';
 import clsx from 'clsx';
@@ -79,6 +80,26 @@ export default function CompressPage() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast('Download started.', 'info');
+  };
+
+  const handleShare = async () => {
+    if (!compressedPdf || !file) return;
+    const blob = new Blob([compressedPdf as any], { type: 'application/pdf' });
+    const fileName = `compressed_${file.name || 'document.pdf'}`;
+    const shareFile = new File([blob], fileName, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          files: [shareFile],
+          title: fileName,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      toast('Sharing not supported on this device/browser', 'error');
+    }
   };
 
   const handleReset = () => {
@@ -292,6 +313,12 @@ export default function CompressPage() {
                       <Download className="w-6 h-6" />
                       <span>Save Compressed PDF</span>
                     </motion.button>
+                    
+                    <ShareButton
+                      onShare={handleShare}
+                      className="w-full py-5 rounded-2xl bg-element border border-border-main hover:border-txt-primary text-txt-primary font-bold text-xl shadow-lg transition-all"
+                      label="Share"
+                    />
                     
                     <div className="flex gap-4 w-full">
                       <motion.button
